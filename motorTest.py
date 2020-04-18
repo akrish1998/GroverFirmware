@@ -106,12 +106,15 @@ def getEnc2(motorID):
 	return cmd
 	
 def allForward():
-	rc.ForwardM1(address[0], 100)
-	rc.ForwardM2(address[0], 100)
-	rc.ForwardM1(address[1], 100)
-	rc.ForwardM2(address[1], 100)
-	rc.ForwardM1(address[2], 100)
-	rc.ForwardM2(address[2], 100)
+	ResetEncs()
+	print(rc.ReadEncM1(address[0])[1], rc.ReadEncM1(address[1])[1], rc.ReadEncM1(address[2])[1])
+	print(rc.ReadEncM2(address[0])[1], rc.ReadEncM2(address[1])[1], rc.ReadEncM2(address[2])[1])
+	rc.ForwardM1(address[0], 25)
+	rc.ForwardM2(address[0], 25)
+	rc.ForwardM1(address[1], 25)
+	rc.ForwardM2(address[1], 25)
+	rc.ForwardM1(address[2], 25)
+	rc.ForwardM2(address[2], 25)
 	time.sleep(5)
 	rc.ForwardM1(address[0], 0)
 	rc.ForwardM2(address[0], 0)
@@ -119,15 +122,17 @@ def allForward():
 	rc.ForwardM2(address[1], 0)
 	rc.ForwardM1(address[2], 0)
 	rc.ForwardM2(address[2], 0)
+	print(rc.ReadEncM1(address[0])[1], rc.ReadEncM1(address[1])[1], rc.ReadEncM1(address[2])[1])
+	print(rc.ReadEncM2(address[0])[1], rc.ReadEncM2(address[1])[1], rc.ReadEncM2(address[2])[1])
 	return 0
 
 def allBackward():
-	rc.BackwardM1(address[0], 100)
-	rc.BackwardM2(address[0], 100)
-	rc.BackwardM1(address[1], 100)
-	rc.BackwardM2(address[1], 100)
-	rc.BackwardM1(address[2], 100)
-	rc.BackwardM2(address[2], 100)
+	rc.BackwardM1(address[0], 25)
+	rc.BackwardM2(address[0], 25)
+	rc.BackwardM1(address[1], 25)
+	rc.BackwardM2(address[1], 25)
+	rc.BackwardM1(address[2], 25)
+	rc.BackwardM2(address[2], 25)
 	time.sleep(5)
 	rc.BackwardM1(address[0], 0)
 	rc.BackwardM2(address[0], 0)
@@ -135,6 +140,8 @@ def allBackward():
 	rc.BackwardM2(address[1], 0)
 	rc.BackwardM1(address[2], 0)
 	rc.BackwardM2(address[2], 0)
+	print(rc.ReadEncM1(address[0])[1], rc.ReadEncM1(address[1])[1], rc.ReadEncM1(address[2])[1])
+	print(rc.ReadEncM2(address[0])[1], rc.ReadEncM2(address[1])[1], rc.ReadEncM2(address[2])[1])
 	return 0
 
 
@@ -371,18 +378,30 @@ class MotorTestMethods(unittest.TestCase):
 	def test_RC4_F(self):
 		print("RC4_F")
 		self.assertTrue(getRollin(3, 1, 1) > 0, msg = "nope")
+		print('RC4 M1: {}'.format(rc.ReadEncM1(address[3])[1]))
+		print('RC4 M2: {}'.format(rc.ReadEncM2(address[3])[1]))
+		print()
 
 	def test_RC4_B(self):
 		print("RC4_B")
 		self.assertTrue(getRollin(3, 1, 2) > 0, msg = "nope")
+		print('RC4 M1: {}'.format(rc.ReadEncM1(address[3])[1]))
+		print('RC4 M2: {}'.format(rc.ReadEncM2(address[3])[1]))
+		print()
 
 	def test_RC5_F(self):
 		print("RC5_F")
 		self.assertTrue(getRollin(4, 1, 1) > 0, msg = "nope")
+		print('RC5 M1: {}'.format(rc.ReadEncM1(address[4])[1]))
+		print('RC5 M2: {}'.format(rc.ReadEncM2(address[4])[1]))
+		print()
 
 	def test_RC5_B(self):
 		print("RC5_B")
 		self.assertTrue(getRollin(4, 1, 2) > 0, msg = "nope")
+		print('RC5 M1: {}'.format(rc.ReadEncM1(address[4])[1]))
+		print('RC5 M2: {}'.format(rc.ReadEncM2(address[4])[1]))
+		print()
 
 	# def test_Corner1_F(self):
 	# 	print("Corner 1 F")
