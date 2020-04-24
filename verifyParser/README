@@ -1,0 +1,8 @@
+python3 commandTestLooper.py
+
+Only verifies the command loop, parser, and runner. Basically it ensures which commands
+are sent where, and that invalid commands are handled nicely.
+
+Does not verify actual functions:
+stupidFuncs functions only prints which test should be run, the parameter details, and
+a static, random encoder value
