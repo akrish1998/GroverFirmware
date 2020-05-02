@@ -16,9 +16,9 @@ to add new func / command:
 class COMMAND_BOOK():
 	def __init__(self):
 		self.book = {}
-		self.STD_SPEED = 60             # standard constants that are used when no spped or time specified
+		self.STD_SPEED = 60.0             # standard constants that are used when no spped or time specified
 		self.STD_TIME = 5
-                                                                                # total command length
+                                                                               # total command length
 		self.book["raf"] = testSuite.roll_all_forward                  # 1 - 3 args
 		self.book["rab"] = testSuite.roll_all_backward                 # 1 - 3 args
 		self.book["aar"] = testSuite.articulate_all_corners_right      # 1 - 3 args
@@ -26,7 +26,7 @@ class COMMAND_BOOK():
 		self.book["rs"] = testSuite.rotate_set                         # 3 - 5 args
 		self.book["ri"] = testSuite.rotate_individual_wheel            # 4 - 6 args
 		self.book["k"] = testSuite.kill_all                            # 1 args
-		self.book["kill"] = testSuite.kill_all                         # 1 args
+		self.book["r"] = testSuite.ResetEncs
 
 
     # dumps this info when user enters help cuz I'm dumb and can't remember every command and its field
@@ -70,7 +70,10 @@ class COMMAND_BOOK():
 		result = 0
 		try:
 			if(len(command) == 1):
-				result = self.book[command[0]]()
+				if(command[0] == "k" or command[0] == "kill"):
+					result = self.book["k"]()
+				elif(command[0] == "" or command[0] == "reset"):
+					result = self.book["r"]()
 			elif(len(command) == 3):
 				result = self.book[command[0]](command[1], command[2])
 			elif(len(command) == 4):
