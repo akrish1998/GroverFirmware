@@ -12,8 +12,8 @@ rc.Open()
 #0x80 -> 128 -> roboclaw #1 wheels 4 & 5 for wheel revolution (functional)
 #0x81 -> 129 -> roboclaw #2 wheels 6 & 7 for wheel revolution (functional)
 #0x82 -> 130 -> roboclaw #3 wheels 8 & 9 for wheel revolution (functional)
-#0x83 -> 131 -> roboclaw #4 wheels 0 & 1 for wheel rotation
-#0x84 -> 132 -> roboclaw #5 wheels 2 & 3 for wheel rotation
+#0x83 -> 131 -> roboclaw #4 wheels 4 & 6 for wheel rotation
+#0x84 -> 132 -> roboclaw #5 wheels 7 & 9 for wheel rotation
 address = [0x80,0x81,0x82,0x83,0x84]	
 
 rc.ResetEncoders(address[0])
@@ -153,7 +153,7 @@ def test_motor(motorID, d):
 		spinMotor(motorID,0)
 		return getEnc(motorID)
 		
-# verifies the mixed commands for individual RCs
+# verifies commands for individual RCs
 # which determines which direction to move the wheels
 def getRollin(motorID, d, which):
 	speed = d * 20
@@ -249,81 +249,6 @@ class MotorTestMethods(unittest.TestCase):
 				self.assertTrue(0 <= enc <= 2000)
 			else:
 				self.assertTrue(type(enc) is int or type(enc) is long)
-	#Test each RoboClaw and make sure it's Logic and Main battery voltage
-	#are within acceptable parameters
-	# def test_Logic_battery0(self):
-		# self.assertTrue(4.5 <= (rc.ReadLogicBatteryVoltage(address[0])[1])/10.0 <= 5.5)
-	# def test_Logic_battery1(self):
-		# self.assertTrue(4.5 <= (rc.ReadLogicBatteryVoltage(address[1])[1])/10.0 <= 5.5)
-	# def test_Logic_battery2(self):
-		# self.assertTrue(4.5 <= (rc.ReadLogicBatteryVoltage(address[2])[1])/10.0 <= 5.5)
-	# def test_Logic_battery3(self):
-		# self.assertTrue(4.5 <= (rc.ReadLogicBatteryVoltage(address[3])[1])/10.0 <= 5.5)	
-	# def test_Logic_battery4(self):
-		# self.assertTrue(4.5 <= (rc.ReadLogicBatteryVoltage(address[4])[1])/10.0 <= 5.5)
-
-	# def test_Main_battery0(self):
-		# self.assertTrue(11.5 <= (rc.ReadMainBatteryVoltage(address[0])[1])/10.0 <= 12.5)
-	# def test_Main_battery1(self):
-		# self.assertTrue(11.5 <= (rc.ReadMainBatteryVoltage(address[1])[1])/10.0 <= 12.5)
-	# def test_Main_battery2(self):
-		# self.assertTrue(11.5 <= (rc.ReadMainBatteryVoltage(address[2])[1])/10.0 <= 12.5)
-	# def test_Main_battery3(self):
-		# self.assertTrue(11.5 <= (rc.ReadMainBatteryVoltage(address[3])[1])/10.0 <= 12.5)
-	# def test_Main_battery4(self):
-		# self.assertTrue(11.5 <= (rc.ReadMainBatteryVoltage(address[4])[1])/10.0 <= 12.5)
-
-	#Test that the encoders increase when the motors are moved forward,
-	#and they decrease when motors are moved backwards
-	
-	# def test_motor4_F(self):
-	# 	print("Motor4_F")
-	# 	self.assertTrue(test_motor(4,1) > 0, msg = "Encoder Value error, should have read ABOVE 0, instead was :" + str(getEnc(4)))
-	
-	# def test_motor4_B(self):
-	# 	print("Motor4_B")
-	# 	self.assertTrue(test_motor(4,-1) < 0, msg = "Encoder Value error, should have read BELOW 0, instead was : " + str(getEnc(4))) 	
-
-	# def test_motor5_F(self):
-	# 	print("Motor5_F")
-	# 	self.assertTrue(test_motor(5,1) > 0, msg = "Encoder Value error, should have read ABOVE 0, instead was : " + str(getEnc(5)))
-
-	# def test_motor5_B(self):
-	# 	print("Motor5_B")
-	# 	self.assertTrue(test_motor(5,-1) < 0, msg = "Encoder Value error, should have read BELOW 0, instead was : " + str(getEnc(5)))
-
-	# def test_motor6_F(self):
-	# 	print("Motor6_F")
-	# 	self.assertTrue(test_motor(6,1) > 0, msg = "Encoder Value error, should have read ABOVE 0, instead was : " + str(getEnc(6)))
-
-	# def test_motor6_B(self):
-	# 	print("Motor6_B")
-	# 	self.assertTrue(test_motor(6,-1) < 0, msg = "Encoder Value error, should have read BELOW 0, instead was : " + str(getEnc(6)))
-
-	# def test_motor7_F(self): #Motor encoder values do not invert
-	# 	print("Motor7_F")
-	# 	self.assertTrue(test_motor(7,1) > 0, msg = "Encoder Value error, should have read ABOVE 0, instead was : " + str(getEnc(7)))
-
-	# def test_motor7_B(self): #Motor encoder values do not invert
-	# 	print("Motor7_B")
-	# 	self.assertTrue(test_motor(7,-1) < 0, msg = "Encoder Value error, should have read BELOW 0, instead was : " + str(getEnc(7)))
-
-	# def test_motor8_F(self):
-	# 	print("Motor8_F")
-	# 	self.assertTrue(test_motor(8,1) > 0, msg = "Encoder Value error, should have read ABOVE 0, instead was : " + str(getEnc(8)))
-	
-	# def test_motor8_B(self):
-	# 	print("Motor8_B")
-	# 	self.assertTrue(test_motor(8,-1) < 0, msg = "Encoder Value error, should have read BELOW 0, instead was : " + str(getEnc(8)))
-
-	# def test_motor9_F(self):
-	# 	print("Motor9_F")
-	# 	self.assertTrue(test_motor(9,1) > 0, msg = "Encoder Value error, should have read ABOVE 0, instead was : " + str(getEnc(9)))
-
-	# def test_motor9_B(self):
-	# 	print("Motor9_B")
-	# 	self.assertTrue(test_motor(9,-1) < 0, msg = "Encoder Value error, should have read BELOW 0, instead was : " + str(getEnc(9)))
-		
 	
 	# def test_RC1_F(self):
 	# 	print("RC1_F")
