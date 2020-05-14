@@ -20,8 +20,9 @@ def main():
 		command = command.strip()
 		command = command.lower()
 		if(len(command) != 0):
-			command = command.split(' ')
-			if(cBook.run_command(command) == -1):
+			#command = command.split(' ')
+			#if(cBook.run_command(command) == -1):
+			if(cBook.parseCommand(command) == -1):
 				print("Invalid Command")
 				print("For more info, enter help")
 		print("")

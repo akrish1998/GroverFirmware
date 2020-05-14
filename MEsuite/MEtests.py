@@ -33,6 +33,18 @@ rc.Open()
 #0x84 -> 132 -> roboclaw #5 wheels 7 & 9 for wheel rotation
 address = [0x80,0x81,0x82,0x83,0x84]	
 
+def getRegisterSpeed(speed):
+	result2 = (0.002+speed) // 0.0009
+	return result2
+    
+    
+def getTime(speed, dist):	# speed in m/s
+	howLong = dist/speed
+	return howLong
+	
+def getVeloInMS(speed):
+	msSpeed = (0.0009 * speed) - 0.002
+	return msSpeed
     
 # tells all motors to stop, direction does not matter since 0 is default stop
 # for all roboclaw movement commnads
@@ -138,4 +150,59 @@ def dynamicWheelTest_LowSpeed():
 	print("finsihed backward: %s" % (((time.ctime()).split(' '))[3]))
 	sys.stdout.flush()
 
-	return 0   
+	return 0 
+
+
+def dynamicWheelTest(speed, dist):	
+	print("running dynamic wheel test")
+	regSpeed = getRegisterSpeed(speed);
+	msSpeed = getVeloInMS(regSpeed)
+	howLong = getTime(speed, dist)
+	print("Running forward test at %.4f m/s" % (speed))
+	rc.ForwardM1(address[RC1], regSpeed)
+	rc.ForwardM2(address[RC1], regSpeed)
+	rc.ForwardM1(address[RC2], regSpeed)
+	rc.ForwardM2(address[RC2], regSpeed)
+	rc.ForwardM1(address[RC3], regSpeed)
+	rc.ForwardM2(address[RC3], regSpeed)
+	time.sleep(howLong)
+	rc.ForwardM1(address[RC1], 0)
+	rc.ForwardM2(address[RC1], 0)
+	rc.ForwardM1(address[RC2], 0)
+	rc.ForwardM2(address[RC2], 0)
+	rc.ForwardM1(address[RC3], 0)
+	rc.ForwardM2(address[RC3], 0)
+	print("Finished forward")
+	
+	time.sleep(5)
+	print("Running backward test at %.4f m/s" % (speed))
+	rc.BackwardM1(address[RC1], regSpeed)
+	rc.BackwardM2(address[RC1], regSpeed)
+	rc.BackwardM1(address[RC2], regSpeed)
+	rc.BackwardM2(address[RC2], regSpeed)
+	rc.BackwardM1(address[RC3], regSpeed)
+	rc.BackwardM2(address[RC3], regSpeed)
+	time.sleep(howLong)
+	rc.BackwardM1(address[RC1], 0)
+	rc.BackwardM2(address[RC1], 0)
+	rc.BackwardM1(address[RC2], 0)
+	rc.BackwardM2(address[RC2], 0)
+	rc.BackwardM1(address[RC3], 0)
+	rc.BackwardM2(address[RC3], 0)
+	print("Finished backward")
+	return 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
