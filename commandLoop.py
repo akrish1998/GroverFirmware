@@ -16,22 +16,6 @@ import commandBook
 -all commands are NOT case sensitive
 """
 
-def parseCommand(command, cBook):
-	if(len(command) == 1):
-		if(command[0] != "k" and command[0] != "kill"):
-			command.append(cBook.STD_SPEED)
-			command.append(cBook.STD_TIME)
-	elif(len(command) == 3):
-		if(command[0] == "rs"):
-			command.append(cBook.STD_SPEED)
-			command.append(cBook.STD_TIME)
-	elif(len(command) == 4):
-			command.append(cBook.STD_SPEED)
-			command.append(cBook.STD_TIME)
-
-	return cBook.run_command(command)
-
-
 def main():
 	cBook = commandBook.COMMAND_BOOK()
 
@@ -46,7 +30,7 @@ def main():
 			elif(command[0] == "moreinfo"):
 				cBook.printMoreInfo()
 			else:
-				if(parseCommand(command, cBook) == -1):
+				if(cBook.parseCommand(command) == -1):
 					print("-1 from parse")
 					print("Invalid Command")
 					print("For more info, enter help")

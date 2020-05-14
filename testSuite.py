@@ -6,6 +6,9 @@ import unittest
 from roboclaw import Roboclaw
 
 
+#global for time stopper for seeing live encoder vals
+stopper = 0
+
 #constants (like #define in c): which RC corresponds to the address in the address list
 RC1 = 0
 RC2 = 1
@@ -13,20 +16,11 @@ RC3 = 2
 RC4 = 3
 RC5 = 4
 
-# constants for articulation wheels
-FRONT_LEFT = [RC4, 2]
-BACK_LEFT = [RC4, 1]
-FRONT_RIGHT = [RC5, 1]
-BACK_RIGHT = [RC5, 2]
-
-
-# not necessary for Grover Team's testing purposes but will be implemented
-# when user gets their hands on it
-MAX_USER_SPEED = 100
-MIN_USER_SPEED = 10
-MIN_USER_TIME = 3
-MAX_MASTER_SPEED = 127
-MIN_MASTER_SPEED = 0    # full stop, 1-7 too slow for noteworthy movement
+#calibration parameters
+CALIBRATION_SPEED = 22
+CALIBRATION_TIME = 3
+RC5M1_CORNER_SPEED = 10			# front right wheel messed up, might be RC calbration error
+ARC_SPEED_FACTOR = 4			# when arc turning, outer wheel speed > inner wheel speed by 4x
 
 
 rc = Roboclaw("/dev/ttyS0",115200)
@@ -37,31 +31,67 @@ rc.Open()
 #0x83 -> 131 -> roboclaw #4 wheels 4 & 6 for wheel rotation
 #0x84 -> 132 -> roboclaw #5 wheels 7 & 9 for wheel rotation
 address = [0x80,0x81,0x82,0x83,0x84]	
-
-
-# encoder values of articulation motors on program startup
-# maybe use as ref value for 
-RC4_M1 = rc.ReadEncM1(address[RC4])[1]
-RC4_M2 = rc.ReadEncM2(address[RC4])[1]
-RC5_M1 = rc.ReadEncM1(address[RC5])[1]
-RC5_M2 = rc.ReadEncM2(address[RC5])[1]
-print("Articulation encoders at startup:")
-print("Front left (RC4 M2): %s" % (RC4_M2))
-print("Front right (RC5 M1): %s" % (RC5_M1))
-print("Back left (RC4 M1): %s" % (RC4_M1))
-print("Back right (RC5 M2): %s" % (RC5_M2))
-
 	
-# calculates estimated velocity in m/s and dist traveled for the turning wheels
-# based on velocity graphs
-def calculateData(speed, timer):
-	velo = 0.0009*speed-0.002		# velocity in m/s
-	dist = (velo*timer)			# dist in m
-	calcTime = dist/speed
-	print("velocity: %.2f mm/s" % (velo))
-	print("Distance: %.2f m" % (dist))
-	print("Calculated Time: %.2f sec" % (calcTime))
+def getRegisterSpeed(speed):
+	result2 = (0.002+speed) // 0.0009	# based on graph velocity formula for m/s
+	return result2				# velo = 0.0009(reg value) - 0.002
+    
+    
+def getTime(speed, dist):			# speed in m/s
+	howLong = dist/speed			# velo = distance / time
+	return howLong
 	
+def getVeloInMS(speed):				# converts register value to velocity in m/s
+	msSpeed = (0.0009 * speed) - 0.002
+	return msSpeed
+
+def print_corner_enc():
+	cornerEncoders = getCornerEncoders();
+	print("Articulation encoders at startup:")
+	print("Front left (RC4 M2): %s" % (cornerEncoders[1]))
+	print("Front right (RC5 M1): %s" % (cornerEncoders[2]))
+	print("Back left (RC4 M1): %s" % (cornerEncoders[0]))
+	print("Back right (RC5 M2): %s" % (cornerEncoders[3]))
+	
+def calibrate_corner_encoders():
+	rc.ForwardM1(address[RC5], RC5M1_CORNER_SPEED)	#front right wheel
+	rc.ForwardM2(address[RC5], CALIBRATION_SPEED)	#back right wheel
+	rc.ForwardM1(address[RC4], CALIBRATION_SPEED)	#back left wheel
+	rc.ForwardM2(address[RC4], CALIBRATION_SPEED)	#front left wheel
+	time.sleep(CALIBRATION_TIME)
+	rc.ForwardM1(address[RC5], 0)	
+	rc.ForwardM2(address[RC5], 0)	
+	rc.ForwardM1(address[RC4], 0)	
+	rc.ForwardM2(address[RC4], 0)
+	
+	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED)	#front right wheel
+	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)	#back right wheel
+	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)	#back left wheel
+	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)	#front left wheel
+	time.sleep(CALIBRATION_TIME)
+	rc.ForwardM1(address[RC5], 0)	
+	rc.ForwardM2(address[RC5], 0)	
+	rc.ForwardM1(address[RC4], 0)	
+	rc.ForwardM2(address[RC4], 0)
+	
+	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED//2)	#front right wheel
+	rc.BackwardM2(address[RC5], CALIBRATION_SPEED//2)	#back right wheel
+	rc.BackwardM1(address[RC4], CALIBRATION_SPEED//2)	#back left wheel
+	rc.BackwardM2(address[RC4], CALIBRATION_SPEED//2)	#front left wheel
+	time.sleep(CALIBRATION_TIME)
+	rc.ForwardM1(address[RC5], 0)	
+	rc.ForwardM2(address[RC5], 0)	
+	rc.ForwardM1(address[RC4], 0)	
+	rc.ForwardM2(address[RC4], 0)
+
+	ResetEncs()					#center position now 0
+	RC5_M1 = rc.ReadEncM1(address[RC5])[1]
+	RC5_M2 = rc.ReadEncM2(address[RC5])[1]
+	RC4_M1 = rc.ReadEncM1(address[RC4])[1]
+	RC4_M2 = rc.ReadEncM2(address[RC4])[1]
+	print_corner_enc()
+	return 0
+
 	
 # adrian's func, with slightly modified parameters 
 def print_grover(encoderArrayM1, encoderArrayM2, testName):
@@ -91,6 +121,16 @@ def ResetEncs():
 	rc.ResetEncoders(address[0])
 	rc.ResetEncoders(address[1])
 	rc.ResetEncoders(address[2])
+	rc.ResetEncoders(address[3])
+	rc.ResetEncoders(address[4])
+	
+def getCornerEncoders():
+	values[]
+	values.append(rc.ReadEncM1(address[RC4])[1])		# back left -> index 0
+	values.append(rc.ReadEncM2(address[RC4])[1])		# front left -> index 1
+	values.append(rc.ReadEncM1(address[RC5])[1])		# front right -> index 2
+	values.append(rc.ReadEncM2(address[RC5])[1])		# back right -> index 3
+	return values
 
 	
 def getEnc(motorID):
@@ -353,4 +393,104 @@ def articulate_all_corners_left(speed, timer):
 	print_grover(dataM1, dataM2, "test - Corner Articulation Left (backward)")
 	return 0
 
+	
+def turn_calibration(speed, distance):
+	outer_speed = float(speed)			# drive speed, not articulation speed, for outer wheels
+	outer_reg_speed = getRegisterSpeed(outer_speed)
+	inner_speed = outer_speed//ARC_SPEED_FACTOR
+	inner_reg_speed = getRegisterSpeed(inner_speed)
+	dist = float(distance)
+	timer = getTime(outer_speed, dist)
+	if(outer_speed>0.1123):
+		print("slow down there bud")
+		return 0
+	
+	
+# to turn right, front wheels articulated right and back wheels articulated left
+def full_turn_right(speed, dist):
+	rc.ForwardM1(address[RC5], RC5M1_CORNER_SPEED)	#front right wheel
+	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)	#back right wheel
+	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)	#back left wheel
+	rc.ForwardM2(address[RC4], CALIBRATION_SPEED)	#front left wheel
+	time.sleep(CALIBRATION_TIME)
+	rc.ForwardM1(address[RC5], 0)	#front right wheel
+	rc.BackwardM2(address[RC5], 0)	#back right wheel
+	rc.BackwardM1(address[RC4], 0)	#back left wheel
+	rc.ForwardM2(address[RC4], 0)
+	forward(speed, dist, 'r')
+	return 0
+	
+# to turn left, front wheels articulated left and back wheels articulated right
+def full_turn_left(speed, dist):
+	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED)	#front right wheel
+	rc.ForwardM2(address[RC5], CALIBRATION_SPEED)	#back right wheel
+	rc.ForwardM1(address[RC4], CALIBRATION_SPEED)	#back left wheel
+	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)	#front left wheel
+	time.sleep(CALIBRATION_TIME)
+	rc.BackwardM1(address[RC5], 0)	#front right wheel
+	rc.ForwardM2(address[RC5], 0)	#back right wheel
+	rc.ForwardM1(address[RC4], 0)	#back left wheel
+	rc.BackwardM2(address[RC4], 0)
+	forward(speed, dist, 'l')
+	return 0
+	
+	
+
+def forward(speed, distance, direction):
+	outer_speed = float(speed)			# drive speed, not articulation speed, for outer wheels
+	outer_reg_speed = getRegisterSpeed(outer_speed)
+	inner_speed = outer_speed//ARC_SPEED_FACTOR
+	inner_reg_speed = getRegisterSpeed(inner_speed)
+	dist = float(distance)
+	timer = getTime(outer_speed, dist)
+	if(outer_speed>0.1123):
+		print("slow down there bud")
+		return 0
+	
+	if (direction=='r'):					# left wheel speed (outer wheels) > right wheel speed (inner wheels)
+		rc.ForwardM1(address[RC1], outer_reg_speed)		# left wheels, outer wheels
+		rc.ForwardM2(address[RC1], outer_reg_speed)
+		rc.ForwardM1(address[RC2], outer_reg_speed)
+		rc.ForwardM2(address[RC2], inner_reg_speed)		# right wheels, inner wheels
+		rc.ForwardM1(address[RC3], inner_reg_speed)
+		rc.ForwardM2(address[RC3], inner_reg_speed)
+		time.sleep(timer)
+		rc.ForwardM1(address[RC1], 0)		# left wheels, outer wheels
+		rc.ForwardM2(address[RC1], 0)
+		rc.ForwardM1(address[RC2], 0)
+		rc.ForwardM2(address[RC2], 0)		# right wheels, inner wheels
+		rc.ForwardM1(address[RC3], 0)
+		rc.ForwardM2(address[RC3], 0)
+		
+	elif(direction=='l'):					# right wheel speed (outer wheels) > left wheel speed (inner wheels)
+		rc.ForwardM1(address[RC1], inner_reg_speed)		# left wheels, inner wheels
+		rc.ForwardM2(address[RC1], inner_reg_speed)
+		rc.ForwardM1(address[RC2], inner_reg_speed)
+		rc.ForwardM2(address[RC2], outer_reg_speed)		# right wheels, outer wheels
+		rc.ForwardM1(address[RC3], outer_reg_speed)
+		rc.ForwardM2(address[RC3], outer_reg_speed)
+		time.sleep(timer)
+		rc.ForwardM1(address[RC1], 0)		# left wheels, outer wheels
+		rc.ForwardM2(address[RC1], 0)
+		rc.ForwardM1(address[RC2], 0)
+		rc.ForwardM2(address[RC2], 0)		# right wheels, inner wheels
+		rc.ForwardM1(address[RC3], 0)
+		rc.ForwardM2(address[RC3], 0)
+		
+	else:						# straight forward / not arc turn
+		rc.ForwardM1(address[RC1], outer_reg_speed)		# left wheels
+		rc.ForwardM2(address[RC1], outer_reg_speed)
+		rc.ForwardM1(address[RC2], outer_reg_speed)
+		rc.ForwardM2(address[RC2], outer_reg_speed)		# right wheels
+		rc.ForwardM1(address[RC3], outer_reg_speed)
+		rc.ForwardM2(address[RC3], outer_reg_speed)
+		time.sleep(timer)
+		rc.ForwardM1(address[RC1], 0)
+		rc.ForwardM2(address[RC1], 0)
+		rc.ForwardM1(address[RC2], 0)
+		rc.ForwardM2(address[RC2], 0)		
+		rc.ForwardM1(address[RC3], 0)
+		rc.ForwardM2(address[RC3], 0)
+		
+	return 0
 

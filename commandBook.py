@@ -16,7 +16,7 @@ to add new func / command:
 class COMMAND_BOOK():
 	def __init__(self):
 		self.book = {}
-		self.STD_SPEED = 60.0             # standard constants that are used when no spped or time specified
+		self.STD_SPEED = 60.0             # standard constants that are used when no speed or time specified
 		self.STD_TIME = 5
                                                                                # total command length
 		self.book["raf"] = testSuite.roll_all_forward                  # 1 - 3 args
@@ -64,29 +64,61 @@ class COMMAND_BOOK():
         
 	def printMoreInfo(self):        # TBD
 		print("idk yet lol")
+		
+		
+		
+	def parseCommand(self, command):
+		# if(command[0]=='turn'):
+			# if(command[1]=='right'):
+				# print("not implemented yet riperoni")
+				# return 0
+		if(command[0]=='turn'):
+			if(command[1]=='right'):
+				testSuite.full_turn_right(command[3], command[4])
+				return 0
+			elif(command[1]=='left'):
+				testSuite.full_turn_left(command[3], command[4])
+				return 0
+		elif(command[0]=='forward'):
+			testSuite.forward(command[1], command[2], command[3])
+			return 0
+		elif(len(command) == 1):
+			if(command[0] != "k" and command[0] != "kill"):
+				command.append(cBook.STD_SPEED)
+				command.append(cBook.STD_TIME)
+		elif(len(command) == 3):
+			if(command[0] == "rs"):
+				command.append(cBook.STD_SPEED)
+				command.append(cBook.STD_TIME)
+		elif(len(command) == 4):
+				command.append(cBook.STD_SPEED)
+				command.append(cBook.STD_TIME)
+
+		return self.run_command(command)
+		
     
         
-	def run_command(self, command):        # actually calls functions after looper parses the command
+	def run_command(self, command):        # actually calls functions after command parsed
 		result = 0
-		try:
-			if(len(command) == 1):
-				if(command[0] == "k" or command[0] == "kill"):
-					result = self.book["k"]()
-				elif(command[0] == "" or command[0] == "reset"):
-					result = self.book["r"]()
-			elif(len(command) == 3):
-				result = self.book[command[0]](command[1], command[2])
-			elif(len(command) == 4):
-				result = self.book[command[0]](command[1], command[2], command[3])
-			elif(len(command) == 5):
-				result = self.book[command[0]](command[1], command[2], command[3], command[4])
-			elif(len(command) == 6):
-				result = self.book[command[0]](command[1], command[2], command[3], command[4], command[5])
-			else:
-				return -1
-			return result
-
-		except:
-			testSuite.kill_all()                            # safe exit if command fails & rover still moving
+		#try:
+		if(len(command) == 1):
+			if(command[0] == "k" or command[0] == "kill"):
+				result = self.book["k"]()
+			elif(command[0] == "" or command[0] == "reset"):
+				result = self.book["r"]()
+		elif(len(command) == 3):
+			result = self.book[command[0]](command[1], command[2])
+		elif(len(command) == 4):
+			result = self.book[command[0]](command[1], command[2], command[3])
+		elif(len(command) == 5):
+			result = self.book[command[0]](command[1], command[2], command[3], command[4])
+		elif(len(command) == 6):
+			result = self.book[command[0]](command[1], command[2], command[3], command[4], command[5])
+		else:
 			return -1
+		return result
+
+		#except:
+			#testSuite.kill_all()                            # safe exit if command fails & rover still moving
+			#return -1
         
