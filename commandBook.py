@@ -79,6 +79,12 @@ class COMMAND_BOOK():
 			elif(command[1]=='left'):
 				testSuite.full_turn_left(command[3], command[4])
 				return 0
+		elif(command[0]=='calibrate'):
+			testSuite.calibrate_corner_encoders()
+			return 0
+		elif(command[0]=='timer'):
+			testSuite.cali_time_test()
+			return 0
 		elif(command[0]=='forward'):
 			testSuite.forward(command[1], command[2], command[3])
 			return 0

@@ -17,9 +17,9 @@ RC4 = 3
 RC5 = 4
 
 #calibration parameters
-CALIBRATION_SPEED = 22
+CALIBRATION_SPEED = 23
 CALIBRATION_TIME = 3
-RC5M1_CORNER_SPEED = 10			# front right wheel messed up, might be RC calbration error
+RC5M1_CORNER_SPEED = 11			# front right wheel messed up, might be RC calbration error
 ARC_SPEED_FACTOR = 4			# when arc turning, outer wheel speed > inner wheel speed by 4x
 
 
@@ -32,6 +32,18 @@ rc.Open()
 #0x84 -> 132 -> roboclaw #5 wheels 7 & 9 for wheel rotation
 address = [0x80,0x81,0x82,0x83,0x84]	
 	
+
+def cali_time_test():
+	current_enc = rc.ReadEncM2(address[RC4])[1]
+	print("before loop: %s" % (current_enc))
+	rc.BackwardM2(address[RC4], 23)
+	start = time.time()
+	time.sleep(4)
+	rc.BackwardM2(address[RC4], 0)
+	stop = time.time() - start
+	print("timer: %s   enc: %s" % (stop, current_enc))
+	return 0
+
 def getRegisterSpeed(speed):
 	result2 = (0.002+speed) // 0.0009	# based on graph velocity formula for m/s
 	return result2				# velo = 0.0009(reg value) - 0.002
@@ -64,6 +76,8 @@ def calibrate_corner_encoders():
 	rc.ForwardM1(address[RC4], 0)	
 	rc.ForwardM2(address[RC4], 0)
 	
+	print_corner_enc()
+
 	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED)	#front right wheel
 	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)	#back right wheel
 	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)	#back left wheel
@@ -74,6 +88,9 @@ def calibrate_corner_encoders():
 	rc.ForwardM1(address[RC4], 0)	
 	rc.ForwardM2(address[RC4], 0)
 	
+	print_corner_enc()
+	print("half speed: %s   FR speed: %s" % (CALIBRATION_SPEED//2, RC5M1_CORNER_SPEED//2))
+
 	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED//2)	#front right wheel
 	rc.BackwardM2(address[RC5], CALIBRATION_SPEED//2)	#back right wheel
 	rc.BackwardM1(address[RC4], CALIBRATION_SPEED//2)	#back left wheel
@@ -125,7 +142,7 @@ def ResetEncs():
 	rc.ResetEncoders(address[4])
 	
 def getCornerEncoders():
-	values[]
+	values = []
 	values.append(rc.ReadEncM1(address[RC4])[1])		# back left -> index 0
 	values.append(rc.ReadEncM2(address[RC4])[1])		# front left -> index 1
 	values.append(rc.ReadEncM1(address[RC5])[1])		# front right -> index 2
@@ -298,29 +315,37 @@ def rotate_individual_wheel(motorID, motor, direction, speed, timer):
 	#ResetEncs()
 	if(direction == "F" or direction == "f"):
 		if(motor == 1):                                         # M1 forward / right
+			start = time.time()
 			rc.ForwardM1(address[motorID], speed)
 			time.sleep(int(timer))
 			rc.ForwardM1(address[motorID], 0)
+			stop = time.time() - start
 			result = rc.ReadEncM1(address[motorID])[1]
 			print("test - M1 forward")
-		else:                                                   # M2 forward / right
+		else:                             
+			start = time.time()                      # M2 forward / right
 			rc.ForwardM2(address[motorID], speed)
 			time.sleep(int(timer))
 			rc.ForwardM2(address[motorID], 0)
+			stop = time.time() - start
 			result = rc.ReadEncM2(address[motorID])[1]
 			print("test - M2 forward")
     
 	elif(direction == "B" or direction == "b"):     
 		if(motor == 1):                                         # M1 backward / left
+			start = time.time()
 			rc.BackwardM1(address[motorID], speed)
 			time.sleep(int(timer))
 			rc.BackwardM1(address[motorID], 0)
+			stop = time.time() - start
 			result = rc.ReadEncM1(address[motorID])[1]
 			print("test - M1 backward")
 		else:                                                   # M2 backward / left
+			start = time.time()
 			rc.BackwardM2(address[motorID], speed)
 			time.sleep(int(timer))
 			rc.BackwardM2(address[motorID], 0)
+			stop = time.time() - start
 			result = rc.ReadEncM2(address[motorID])[1]
 			print("test - M2 backward")
     
@@ -328,7 +353,7 @@ def rotate_individual_wheel(motorID, motor, direction, speed, timer):
 		print("Invalid Input")
 		return -1
 
-	print("RC%s M%:  %s" % (motorID+1, motor, result))
+	print("RC%s M%s:  %s    time: %s" % (motorID+1, motor, result, stop))
 	return 0
 
 	
