@@ -34,14 +34,9 @@ address = [0x80,0x81,0x82,0x83,0x84]
 	
 
 def cali_time_test():
-	current_enc = rc.ReadEncM2(address[RC4])[1]
-	print("before loop: %s" % (current_enc))
-	rc.BackwardM2(address[RC4], 23)
-	start = time.time()
-	time.sleep(4)
-	rc.BackwardM2(address[RC4], 0)
-	stop = time.time() - start
-	print("timer: %s   enc: %s" % (stop, current_enc))
+	while(1):
+		current_enc = rc.ReadEncM2(address[RC4])[1]
+		print("enc: %s" % (current_enc))
 	return 0
 
 def getRegisterSpeed(speed):
