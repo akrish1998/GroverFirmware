@@ -34,8 +34,10 @@ address = [0x80,0x81,0x82,0x83,0x84]
 	
 
 def cali_time_test():
+	counter=0
 	while(1):
-		current_enc = rc.ReadEncM2(address[RC4])[1]
+		current_enc = rc.ReadEncM2(address[RC5])[1]
+		time.sleep(0.1)
 		print("enc: %s" % (current_enc))
 	return 0
 
