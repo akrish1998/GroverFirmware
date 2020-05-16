@@ -3,6 +3,7 @@ import time
 import math
 import serial
 import unittest
+import threading
 from roboclaw import Roboclaw
 
 
@@ -16,10 +17,30 @@ RC3 = 2
 RC4 = 3
 RC5 = 4
 
+#corner encoder motors cuz they're inverted
+FR_CONTROLLER_MOTOR = 1
+BR_CONTROLLER_MOTOR = 2
+FL_CONTROLLER_MOTOR = 2
+BL_CONTROLLER_MOTOR = 1
+
+FR_ENC_MOTOR = 2
+BR_ENC_MOTOR = 1
+FL_ENC_MOTOR = 1
+BL_ENC_MOTOR = 2
+
+# corner enc values from calibration
+FRONT_RIGHT = 0
+BACK_RIGHT = 0
+FRONT_LEFT = 0
+BACK_LEFT = 0
+
 #calibration parameters
-CALIBRATION_SPEED = 23
-CALIBRATION_TIME = 3
-RC5M1_CORNER_SPEED = 11			# front right wheel messed up, might be RC calbration error
+CALIBRATION_SPEED = 30
+CALIBRATION_TIME = 4
+RC5M1_CORNER_SPEED = 20			# front right wheel messed up, might be RC calbration error
+MAX_CORNER_ENC = 1550
+INVALID_ENC = 1600
+
 ARC_SPEED_FACTOR = 4			# when arc turning, outer wheel speed > inner wheel speed by 4x
 
 
@@ -31,6 +52,10 @@ rc.Open()
 #0x83 -> 131 -> roboclaw #4 wheels 4 & 6 for wheel rotation
 #0x84 -> 132 -> roboclaw #5 wheels 7 & 9 for wheel rotation
 address = [0x80,0x81,0x82,0x83,0x84]	
+	
+def stopIt():
+	global stopper
+	stopper = 1
 	
 
 def cali_time_test():
@@ -62,49 +87,133 @@ def print_corner_enc():
 	print("Back left (RC4 M1): %s" % (cornerEncoders[0]))
 	print("Back right (RC5 M2): %s" % (cornerEncoders[3]))
 	
+	
+def calibration_looper(rc, motor):
+	global stopper
+	enc_val = 0
+	flag = 0
+	t = threading.timer(CALIBRATION_TIME, stopIt)
+	if(motor==1):
+		caller = rc.ForwardM1
+		reader = rc.ReadEncM2
+	else:
+		caller = rc.ForwardM2
+		reader = rc.ReadEncM1
+		
+	enc_val = reader(address[rc])[1]	
+	caller(address[rc], 22)
+	t.start()
+	while(stopper==0):
+		if(reader(address[rc])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
+			enc_val += MAX_CORNER_ENC
+			flag = 1
+		time.sleep(0.1)
+	
+	caller(address[rc], 0)
+	enc_val += reader(address[rc])[1]
+	return enc_val
+			
+	
+# goes clockwise from front right
+# remember motors inverted for turning & reading encs
 def calibrate_corner_encoders():
-	rc.ForwardM1(address[RC5], RC5M1_CORNER_SPEED)	#front right wheel
-	rc.ForwardM2(address[RC5], CALIBRATION_SPEED)	#back right wheel
-	rc.ForwardM1(address[RC4], CALIBRATION_SPEED)	#back left wheel
-	rc.ForwardM2(address[RC4], CALIBRATION_SPEED)	#front left wheel
-	time.sleep(CALIBRATION_TIME)
-	rc.ForwardM1(address[RC5], 0)	
-	rc.ForwardM2(address[RC5], 0)	
-	rc.ForwardM1(address[RC4], 0)	
-	rc.ForwardM2(address[RC4], 0)
+	fr = 0			# front right
+	br = 0			# back right
+	fl = 0			# front left
+	bl = 0			# back left
+	global FRONT_RIGHT
+	global BACK_RIGHT
+	global FRONT_LEFT
+	global BACK_LEFT
 	
-	print_corner_enc()
-
-	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED)	#front right wheel
-	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)	#back right wheel
-	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)	#back left wheel
-	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)	#front left wheel
+	# turn all to full left position
+	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)		# back left
+	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)		# front left
+	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED)		# front right
+	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)		# back right
 	time.sleep(CALIBRATION_TIME)
-	rc.ForwardM1(address[RC5], 0)	
-	rc.ForwardM2(address[RC5], 0)	
-	rc.ForwardM1(address[RC4], 0)	
-	rc.ForwardM2(address[RC4], 0)
+	rc.BackwardM1(address[RC4], 0)		# back left
+	rc.BackwardM2(address[RC4], 0)		# front left
+	rc.BackwardM1(address[RC5], 0)		# front right
+	rc.BackwardM2(address[RC5], 0)
 	
-	print_corner_enc()
-	print("half speed: %s   FR speed: %s" % (CALIBRATION_SPEED//2, RC5M1_CORNER_SPEED//2))
-
-	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED//2)	#front right wheel
-	rc.BackwardM2(address[RC5], CALIBRATION_SPEED//2)	#back right wheel
-	rc.BackwardM1(address[RC4], CALIBRATION_SPEED//2)	#back left wheel
-	rc.BackwardM2(address[RC4], CALIBRATION_SPEED//2)	#front left wheel
-	time.sleep(CALIBRATION_TIME)
-	rc.ForwardM1(address[RC5], 0)	
-	rc.ForwardM2(address[RC5], 0)	
-	rc.ForwardM1(address[RC4], 0)	
-	rc.ForwardM2(address[RC4], 0)
-
-	ResetEncs()					#center position now 0
-	RC5_M1 = rc.ReadEncM1(address[RC5])[1]
-	RC5_M2 = rc.ReadEncM2(address[RC5])[1]
-	RC4_M1 = rc.ReadEncM1(address[RC4])[1]
-	RC4_M2 = rc.ReadEncM2(address[RC4])[1]
-	print_corner_enc()
+	# fr = rc.ReadEncM2(address[RC5])[1]
+	# fr += calibration_looper(RC5, FR_CONTROLLER_MOTOR)
+	# fr += rc.ReadEncM2(address[RC5])[1]
+	# if(fr >= INVALID_ENC):
+		# fr -= MAX_CORNER_ENC
+	# FRONT_RIGHT = fr
+	
+	
+	# br = rc.ReadEncM1(address[RC5])[1]
+	# br += calibration_looper(RC5, BR_CONTROLLER_MOTOR)
+	# br += rc.ReadEncM1(address[RC5])[1]
+	# if(br >= INVALID_ENC):
+		# br -= MAX_CORNER_ENC
+	# BACK_RIGHT = br
+	
+	# bl += rc.ReadEncM2(address[RC4])[1]
+	# bl += calibration_looper(RC4, BL_CONTROLLER_MOTOR)
+	# bl += rc.ReadEncM2(address[RC4])[1]
+	# if(bl >= INVALID_ENC):
+		# bl -= MAX_CORNER_ENC
+	# BACK_LEFT = bl
+	
+	# fl = rc.ReadEncM1(address[RC4])[1]
+	# fl += calibration_looper(RC4, FL_CONTROLLER_MOTOR)
+	# fl += rc.ReadEncM1(address[RC4])[1]
+	# if(fl >= INVALID_ENC):
+		# fl -= MAX_CORNER_ENC
+	# FRONT_LEFT = fl
+	
+	
+	fr = calibration_looper(RC5, FR_CONTROLLER_MOTOR)	# front right
+	if(fr >= INVALID_ENC):
+		fr -= MAX_CORNER_ENC
+	FRONT_RIGHT = fr
+	
+	rc.BackwardM1(address[RC5], 18)
+	while(rc.ReadEncM2(address[RC5])[1] != FRONT_RIGHT):
+		dummy = 0
+	rc.BackwardM1(address[RC5], 0)
+	
+	
+	br = calibration_looper(RC5, BR_CONTROLLER_MOTOR)	# back right
+	if(br >= INVALID_ENC):
+		br -= MAX_CORNER_ENC
+	BACK_RIGHT = br
+	
+	rc.BackwardM2(address[RC5], 25)
+	while(rc.ReadEncM1(address[RC5])[1] != BACK_RIGHT):
+		dummy = 0
+	rc.BackwardM2(address[RC5], 0)
+	
+	
+	bl = calibration_looper(RC4, BL_CONTROLLER_MOTOR)	# back left
+	if(bl >= INVALID_ENC):
+		bl -= MAX_CORNER_ENC
+	BACK_LEFT = bl
+	
+	rc.BackwardM1(address[RC4], 25)
+	while(rc.ReadEncM2(address[RC4])[1] != BACK_LEFT):
+		dummy = 0
+	rc.BackwardM1(address[RC4], 0)
+	
+	
+	fl = calibration_looper(RC4, FL_CONTROLLER_MOTOR)	# front left
+	if(fl >= INVALID_ENC):
+		fl -= MAX_CORNER_ENC
+	FRONT_LEFT = fl
+	
+	rc.BackwardM2(address[RC4], 25)
+	while(rc.ReadEncM1(address[RC4])[1] != FRONT_LEFT):
+		dummy = 0
+	rc.BackwardM2(address[RC4], 0)
+	
+	
+	print("front right: %s   back right: %s    front left: %s   back left: %s" % (FRONT_RIGHT, BACK_RIGHT, FRONT_LEFT, BACK_LEFT))	
 	return 0
+	
 
 	
 # adrian's func, with slightly modified parameters 
@@ -154,7 +263,7 @@ def getEnc(motorID):
 		command = rc.ReadEncM2
 	else:
 		print("MotorID error")
-		return
+		return -1
 	cmd = command(address[motorID])[1]
 	if motorID == 5:
 		cmd = cmd * -1

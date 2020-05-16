@@ -59,6 +59,9 @@ class COMMAND_BOOK():
 		print("[AAL] <speed?> <timer?>")
 		print("turns all wheels to the left at <speed?> for <time?> seconds")
 		print("")
+		print("calibrate")
+		print("calibrates the corner articulation encoders & gets wheel 'center'")
+		print("")
 		print("q or Q to quit")
 		print("")
         
