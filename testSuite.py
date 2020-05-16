@@ -35,7 +35,7 @@ FRONT_LEFT = 0
 BACK_LEFT = 0
 
 #calibration parameters
-CALIBRATION_SPEED = 30
+CALIBRATION_SPEED = 40
 CALIBRATION_TIME = 4
 RC5M1_CORNER_SPEED = 20			# front right wheel messed up, might be RC calbration error
 MAX_CORNER_ENC = 1550
@@ -86,49 +86,22 @@ def print_corner_enc():
 	print("Front right (RC5 M1): %s" % (cornerEncoders[2]))
 	print("Back left (RC4 M1): %s" % (cornerEncoders[0]))
 	print("Back right (RC5 M2): %s" % (cornerEncoders[3]))
-	
-	
-def calibration_looper(rc, motor):
-	global stopper
-	enc_val = 0
-	flag = 0
-	t = threading.Timer(CALIBRATION_TIME, stopIt)
-	if(motor==1):
-		caller = rc.ForwardM1
-		reader = rc.ReadEncM2
-	else:
-		caller = rc.ForwardM2
-		reader = rc.ReadEncM1
-		
-	enc_val = reader(address[rc])[1]	
-	caller(address[rc], 22)
-	#start = time.time()
-	t.start()
-	while(stopper==0):
-		if(reader(address[rc])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
-			enc_val += MAX_CORNER_ENC
-			flag = 1
-		time.sleep(0.1)
-	
-	caller(address[rc], 0)
-	enc_val += reader(address[rc])[1]
-	return enc_val
-			
-	
-	
+
+
 def calibrate_FR():
 	global stopper
-	t = threading.Timer(CALIBRATION_TIME, stopIt)
+	#t = threading.Timer(CALIBRATION_TIME+2, stopIt)
 	flag = 0
 	fr = rc.ReadEncM2(address[RC5])[1]
 		
-	rc.ForwardM1(address[RC5], RC5M1_CORNER_SPEED)
-	t.start()
-	while(stopper==0):
-		if(rc.ReadEncM2(address[rc])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
+	rc.ForwardM1(address[RC5], 30)
+	#t.start()
+	start = time.time()
+	while(time.time()-start<CALIBRATION_TIME+2):
+		if(rc.ReadEncM2(address[RC5])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
 			fr += MAX_CORNER_ENC
 			flag = 1
-		time.sleep(0.1)
+		print("1st loop")
 	
 	rc.ForwardM1(address[RC5], 0)
 	fr += rc.ReadEncM2(address[RC5])[1]
@@ -139,18 +112,20 @@ def calibrate_FR():
 	
 def calibrate_BR():
 	global stopper
-	t = threading.Timer(CALIBRATION_TIME, stopIt)
+	#t = threading.Timer(CALIBRATION_TIME, stopIt)
 	flag = 0
 	br = rc.ReadEncM1(address[RC5])[1]
 		
-	rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
-	t.start()
-	while(stopper==0):
-		if(rc.ReadEncM1(address[rc])[1] >= 1500 and flag==0):		
+	rc.ForwardM2(address[RC5], 55)
+	#t.start()
+	start = time.time()
+	while(time.time()-start<CALIBRATION_TIME+2):
+		if(rc.ReadEncM1(address[RC5])[1] >= 1500 and flag==0):
 			br += MAX_CORNER_ENC
 			flag = 1
 		time.sleep(0.1)
 
+	print("1st loop done for br")
 	rc.ForwardM2(address[RC5], 0)
 	br += rc.ReadEncM1(address[RC5])[1]
 	br = br//2
@@ -161,14 +136,15 @@ def calibrate_BR():
 	
 def calibrate_BL():
 	global stopper
-	t = threading.Timer(CALIBRATION_TIME, stopIt)
+	#t = threading.Timer(CALIBRATION_TIME, stopIt)
 	flag = 0
 	bl = rc.ReadEncM2(address[RC5])[1]
 		
-	rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
-	t.start()
-	while(stopper==0):
-		if(rc.ReadEncM2(address[rc])[1] >= 1500 and flag==0):		
+	rc.ForwardM1(address[RC5], 30)
+	#t.start()
+	start = time.time()
+	while(time.time()-start<CALIBRATION_TIME):
+		if(rc.ReadEncM2(address[RC4])[1] >= 1500 and flag==0):		
 			bl += MAX_CORNER_ENC
 			flag = 1
 		time.sleep(0.1)
@@ -183,14 +159,15 @@ def calibrate_BL():
 	
 def calibrate_FL():
 	global stopper
-	t = threading.Timer(CALIBRATION_TIME, stopIt)
+	#t = threading.Timer(CALIBRATION_TIME, stopIt)
 	flag = 0
 	fl = rc.ReadEncM1(address[RC5])[1]
 		
-	rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
-	t.start()
-	while(stopper==0):
-		if(rc.ReadEncM1(address[rc])[1] >= 1500 and flag==0):		
+	rc.ForwardM2(address[RC5], 30)
+	#t.start()
+	start = time.time()
+	while(time.time()-start<CALIBRATION_TIME):
+		if(rc.ReadEncM1(address[RC4])[1] >= 1500 and flag==0):		
 			fl += MAX_CORNER_ENC
 			flag = 1
 		time.sleep(0.1)
@@ -221,7 +198,7 @@ def calibrate_corner_encoders():
 	# turn all to full left position
 	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)		# back left
 	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)		# front left
-	rc.BackwardM1(address[RC5], RC5M1_CORNER_SPEED)		# front right
+	rc.BackwardM1(address[RC5], CALIBRATION_SPEED)		# front right
 	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)		# back right
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC4], 0)		# back left
@@ -237,34 +214,47 @@ def calibrate_corner_encoders():
 	# FRONT_RIGHT = fr
 	
 	FRONT_RIGHT = calibrate_FR()
-	stopper = 0
-	
-	rc.BackwardM1(address[RC5], 20)
-	while(rc.ReadEncM1(address[RC5])[1] != FRONT_RIGHT):
-		dummy = 0
+	print("fr: %s" % (FRONT_RIGHT))
+	rc.BackwardM1(address[RC5], 30)
+	print("hellooo?")
+	#while(rc.ReadEncM2(address[RC5])[1] <= FRONT_RIGHT+100 and rc.ReadEncM2(address[RC5])[1] >=  FRONT_RIGHT-100):
+		#dummy = 0
+		#print("2nd loop")
+		#time.sleep(0.1)
+	#rc.BackwardM1(address[RC5], 0)
+	while(1):
+		#if(rc.ReadEncM2(address[RC5])[1] == FRONT_RIGHT):
+		if(FRONT_RIGHT-100 <= rc.ReadEncM2(address[RC5])[1] <= FRONT_RIGHT+100):	
+			break
+		time.sleep(0.25)
+	print("fr done")
 	rc.BackwardM1(address[RC5], 0)
-	
-	
+
+
 	BACK_RIGHT = calibrate_BR()
-	stopper=0
 	
-	rc.BackwardM2(address[RC5], 25)
-	while(rc.ReadEncM1(address[RC5])[1] != BACK_RIGHT):
-		dummy = 0
+	rc.BackwardM2(address[RC5], 50)
+	#while(rc.ReadEncM1(address[RC5])[1] != BACK_RIGHT):
+		#dummy = 0
+	
+	while(1):
+		if(BACK_RIGHT-100 <= rc.ReadEncM1 <= BACK_RIGHT+100):
+			break
+		time.sleep(0.25)
 	rc.BackwardM2(address[RC5], 0)
 	
 	
 	BACK_LEFT = calibrate_BL()
 	stopper = 0
 	
-	rc.BackwardM1(address[RC4], 25)
+	rc.BackwardM1(address[RC4], 30)
 	while(rc.ReadEncM2(address[RC4])[1] != BACK_LEFT):
 		dummy = 0
 	rc.BackwardM1(address[RC4], 0)
 	
+
 	FRONT_LEFT = calibrate_FL()
 	stopper = 0
-	
 	
 	rc.BackwardM2(address[RC4], 25)
 	while(rc.ReadEncM1(address[RC4])[1] != FRONT_LEFT):
