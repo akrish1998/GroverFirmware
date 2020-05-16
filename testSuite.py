@@ -92,7 +92,7 @@ def calibration_looper(rc, motor):
 	global stopper
 	enc_val = 0
 	flag = 0
-	t = threading.timer(CALIBRATION_TIME, stopIt)
+	t = threading.Timer(CALIBRATION_TIME, stopIt)
 	if(motor==1):
 		caller = rc.ForwardM1
 		reader = rc.ReadEncM2
@@ -102,6 +102,7 @@ def calibration_looper(rc, motor):
 		
 	enc_val = reader(address[rc])[1]	
 	caller(address[rc], 22)
+	#start = time.time()
 	t.start()
 	while(stopper==0):
 		if(reader(address[rc])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
@@ -168,6 +169,7 @@ def calibrate_corner_encoders():
 	
 	
 	fr = calibration_looper(RC5, FR_CONTROLLER_MOTOR)	# front right
+	fr = fr//2
 	if(fr >= INVALID_ENC):
 		fr -= MAX_CORNER_ENC
 	FRONT_RIGHT = fr
@@ -179,6 +181,7 @@ def calibrate_corner_encoders():
 	
 	
 	br = calibration_looper(RC5, BR_CONTROLLER_MOTOR)	# back right
+	br = br//2
 	if(br >= INVALID_ENC):
 		br -= MAX_CORNER_ENC
 	BACK_RIGHT = br
@@ -190,6 +193,7 @@ def calibrate_corner_encoders():
 	
 	
 	bl = calibration_looper(RC4, BL_CONTROLLER_MOTOR)	# back left
+	bl = bl//2
 	if(bl >= INVALID_ENC):
 		bl -= MAX_CORNER_ENC
 	BACK_LEFT = bl
@@ -201,6 +205,7 @@ def calibrate_corner_encoders():
 	
 	
 	fl = calibration_looper(RC4, FL_CONTROLLER_MOTOR)	# front left
+	fl = fl//2
 	if(fl >= INVALID_ENC):
 		fl -= MAX_CORNER_ENC
 	FRONT_LEFT = fl
