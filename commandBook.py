@@ -75,7 +75,22 @@ class COMMAND_BOOK():
 			# if(command[1]=='right'):
 				# print("not implemented yet riperoni")
 				# return 0
-		if(command[0]=='turn'):
+		if(command[1]=='fr'):
+			testSuite.calibrate_FR()
+			return 0
+		if(command[1]=='br'):
+			testSuite.calibrate_BR()
+			return 0
+		if(command[1]=='bl'):
+			testSuite.calibrate_BL()
+			return 0
+		if(command[1]=='fl'):
+			testSuite.calibrate_FL()
+			return 0
+			
+			
+		
+		elif(command[0]=='turn'):
 			if(command[1]=='right'):
 				testSuite.full_turn_right(command[3], command[4])
 				return 0
