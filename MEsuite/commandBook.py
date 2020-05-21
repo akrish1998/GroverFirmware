@@ -32,8 +32,9 @@ class COMMAND_BOOK():
 		print("")
 		print("Commands: case doesn't matter")
 		print("")
-		print("")
-		print("")
+		print("dynamic or dynamic wheel test")
+		print("runs dynamic speed wheel test at user specified speed & distance in m/s and m")
+		print("either press enter (empty command) or type speed AND distance")
 		print("")
 		print("low speed")
 		print("runs the dynamic wheel test at low speed (tests 1, 3, 5)")
@@ -44,53 +45,45 @@ class COMMAND_BOOK():
 		print("k or kill")
 		print("kill switch: tells all motors to stop moving in the case of an emergency")
 		print("")
-		
-		
-	def requestSpeed(self, command):
-		speed = input("What speed (in m/s): ")
-		speed = speed.strip()
-		if len(speed) <= 0:
-			print("Using default speed: 0.05 m/s")
+	
+
+	def asker(self, command):
+		stuff = input("What speed (m/s) and how far (m): ")
+		stuff = stuff.strip()
+		if(len(stuff)<=0):
+			print("Using default speed and distance: 0.05 m/s   1 m")
 			command.append(DEFAULT_SPEED)
-			return self.requestDist(command)
-			
-		#try:	
-		speed = speed.split(" ")
-		speed = float(speed[0])
-		if speed > MAX_SPEED_MS:
+			command.append(1)
+			return self.runCommand(command)
+		
+		stuff = stuff.split(" ")
+		print(stuff, len(stuff))
+		if(len(stuff)!=2):
+			print("Error: press enter to use default speed & time")
+			print("       or specify a speed & time (with a space in between ^_^)")
+			return -1
+		
+		speed = float(stuff[0])
+		dist = float(stuff[1])
+		if(speed>MAX_SPEED_MS):
 			print("Invalid speed")
 			print("Valid speeds: 0 m/s - 0.1 m/s")
 			return -1
 		command.append(speed)
-		return self.requestDist(command)
-			
-		# except:
-			# print("Invalid Input")
-			# return -1
-			
 		
-	def requestDist(self, command):
-		dist = input("How far (in m): ")
-		dist = dist.strip()
-		if len(dist) <= 0:
-			print("Using default distance: 1 meter")
-			command.append(1)
-			return self.runCommand(command)
-			
-		#try:
-		dist = dist.split(" ")
-		dist = float(dist[0])
+		if(dist<=0):
+			print("Invalid distance")
+			print("Enter distance > 0")
+			return -1
 		command.append(dist)
 		return self.runCommand(command)
-		# except:
-			# print("Invalid Input")
-			# return -1
+
 	
 	def parseCommand(self, command):
 		holder = []
 		if("dynamic" in command):
 			holder.append("dwt")
-			return self.requestSpeed(holder)
+			return self.asker(holder)
 		command = command.split(" ")
 		return self.run_command(command)
 		

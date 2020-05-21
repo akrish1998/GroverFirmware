@@ -39,7 +39,7 @@ def getRegisterSpeed(speed):
     
     
 def getTime(speed, dist):	# speed in m/s
-	howLong = dist/speed
+	howLong = round((dist/speed), 1)
 	return howLong
 	
 def getVeloInMS(speed):
@@ -191,18 +191,6 @@ def dynamicWheelTest(speed, dist):
 	rc.BackwardM2(address[RC3], 0)
 	print("Finished backward")
 	return 0
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
