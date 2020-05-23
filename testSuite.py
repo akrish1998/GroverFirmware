@@ -34,10 +34,10 @@ FRONT_LEFT = 0
 BACK_LEFT = 0
 
 #calibration parameters
-FRONT_CALIBRATION_SPEED = 30
-FRONT_SLOWER = 25
-BACK_CALIBRATION_SPEED = 60
-BACK_SLOWER = 55
+FRONT_CALIBRATION_SPEED = 40
+FRONT_SLOWER = 40
+BACK_CALIBRATION_SPEED = 40
+BACK_SLOWER = 40
 CALIBRATION_TIME = 4
 MAX_CORNER_ENC = 1550
 INVALID_ENC = 1600
@@ -87,28 +87,37 @@ def print_corner_enc():
 def calibrate_FR():
 	global FRONT_RIGHT
 	flag = 0
+	left_most = 0
+	right_most = 0
+	centered = 0
 	rc.BackwardM1(address[RC5], FRONT_CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC5], 0)
-	fr = rc.ReadEncM2(address[RC5])[1]
+	left_most = rc.ReadEncM2(address[RC5])[1]
 		
 	rc.ForwardM1(address[RC5], FRONT_CALIBRATION_SPEED)
-	start = time.time()
-	while(time.time()-start<CALIBRATION_TIME):
-		if(rc.ReadEncM2(address[RC5])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
-			fr += MAX_CORNER_ENC
-			flag = 1
+	time.sleep(CALIBRATION_TIME)
+	#start = time.time()
+	#while(time.time()-start<CALIBRATION_TIME):
+		#if(rc.ReadEncM2(address[RC5])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
+			#fr += MAX_CORNER_ENC
+			#flag = 1
 	
 	rc.ForwardM1(address[RC5], 0)
-	fr += rc.ReadEncM2(address[RC5])[1]
-	fr = fr//2
-	if(fr >= INVALID_ENC):
-		fr -= MAX_CORNER_ENC
+	#fr += rc.ReadEncM2(address[RC5])[1]
+	#fr = fr//2
+	right_most = rc.ReadEncM2(address[RC5])[1]
+	if(right_most <= left_most):
+		right_most += MAX_CORNER_ENC
+	center = (left_most+right_most)//2
+
+	#if(fr >= INVALID_ENC):
+		#fr -= MAX_CORNER_ENC
 	
-	FRONT_RIGHT = fr;
+	#FRONT_RIGHT = fr;
 	rc.BackwardM1(address[RC5], FRONT_SLOWER)
 	while(1):
-		if(FRONT_RIGHT-100 <= rc.ReadEncM2(address[RC5])[1] <= FRONT_RIGHT+100):	
+		if(center-100 <= rc.ReadEncM2(address[RC5])[1] <= center+100):	
 			break
 		time.sleep(0.25)
 	rc.BackwardM1(address[RC5], 0)
@@ -151,19 +160,22 @@ def calibrate_BR():
 def calibrate_BL():
 	global BACK_LEFT
 	flag = 0
+	left_most = 0
+	right_most = 0
+	centered = 0
 	rc.BackwardM1(address[RC4], BACK_CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC4], 0)
-	bl = rc.ReadEncM2(address[RC4])[1]
+	left_most = rc.ReadEncM2(address[RC4])[1]
 		
 	rc.ForwardM1(address[RC4], BACK_CALIBRATION_SPEED)
-	start = time.time()
-	while(time.time()-start<CALIBRATION_TIME):
-		if(rc.ReadEncM2(address[RC4])[1] >= 1500 and flag==0):		
-			bl += MAX_CORNER_ENC
-			flag = 1
-		time.sleep(0.1)
-		print("1st loop")
+	#start = time.time()
+	#while(time.time()-start<CALIBRATION_TIME):
+		#if(rc.ReadEncM2(address[RC4])[1] >= 1500 and flag==0):		
+			#bl += MAX_CORNER_ENC
+			#flag = 1
+		#time.sleep(0.1)
+		#print("1st loop")
 
 	rc.ForwardM1(address[RC4], 0)
 	bl += rc.ReadEncM2(address[RC4])[1]
@@ -186,29 +198,38 @@ def calibrate_BL():
 def calibrate_FL():
 	global FRONT_LEFT
 	flag = 0
+	left_most = 0
+	right_most = 0
+	centered = 0
 	rc.BackwardM2(address[RC4], FRONT_CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC4], 0)
-	fl = rc.ReadEncM1(address[RC4])[1]
+	left_most = rc.ReadEncM1(address[RC4])[1]
 		
 	rc.ForwardM2(address[RC4], FRONT_CALIBRATION_SPEED)
-	start = time.time()
-	while(time.time()-start<CALIBRATION_TIME):
-		if(rc.ReadEncM1(address[RC4])[1] >= 1500 and flag==0):		
-			fl += MAX_CORNER_ENC
-			flag = 1
-		time.sleep(0.1)
+	time.sleep(CALIBRATION_TIME)
+	#start = time.time()
+	#while(time.time()-start<CALIBRATION_TIME+2):
+		#if(rc.ReadEncM1(address[RC4])[1] >= 1500 and flag==0):		
+			#fl += MAX_CORNER_ENC
+			#flag = 1
+		#time.sleep(0.1)
 
 	rc.ForwardM2(address[RC4], 0)
-	fl += rc.ReadEncM1(address[RC4])[1]
-	fl = fl//2
-	if(fl >= INVALID_ENC):
-		fl -= MAX_CORNER_ENC
+	right_most = rc.ReadEncM1(address[RC4])[1]
+	if(right_most <= left_most):
+		right_most += MAX_CORNER_ENC
+	centered = (left_most+right_most) // 2
+
+	#fl += rc.ReadEncM1(address[RC4])[1]
+	#fl = fl//2
+	#if(fl >= INVALID_ENC):
+		#fl -= MAX_CORNER_ENC
 		
-	FRONT_LEFT = fl
-	rc.BackwardM2(address[RC4], FRONT_SLOWER)	
+	#FRONT_LEFT = fl
+	rc.BackwardM2(address[RC4], FRONT_SLOWER)
 	while(1):
-		if(FRONT_LEFT-100 <= rc.ReadEncM1(address[RC4])[1] <= FRONT_LEFT+100):
+		if(centered-100 <= rc.ReadEncM1(address[RC4])[1] <= centered+100):
 			break
 		time.sleep(0.25)
 	rc.BackwardM2(address[RC4], 0)
