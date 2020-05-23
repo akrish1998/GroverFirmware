@@ -101,42 +101,42 @@ def calibrate_FR():
 	left_most = 0
 	right_most = 0
 	centered = 0
-	rc.BackwardM1(address[RC5], FRONT_CALIBRATION_SPEED)
+
+	rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC5], 0)
 	left_most = rc.ReadEncM2(address[RC5])[1]
-		
-	rc.ForwardM1(address[RC5], FRONT_CALIBRATION_SPEED)
-	time.sleep(CALIBRATION_TIME)
-	#start = time.time()
-	#while(time.time()-start<CALIBRATION_TIME):
-		#if(rc.ReadEncM2(address[RC5])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
-			#fr += MAX_CORNER_ENC
-			#flag = 1
+
+	rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
+	#time.sleep(CALIBRATION_TIME)
+	start = time.time()
+	while(time.time()-start<CALIBRATION_TIME):
+		if(rc.ReadEncM2(address[RC5])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
+			centered += MAX_CORNER_ENC
+			flag = 1
 	
 	rc.ForwardM1(address[RC5], 0)
 	#fr += rc.ReadEncM2(address[RC5])[1]
 	#fr = fr//2
 	right_most = rc.ReadEncM2(address[RC5])[1]
-	if(right_most <= left_most):
-		right_most += MAX_CORNER_ENC
-	center = (left_most+right_most)//2
+	centered += right_most
+	centered = (centered+left_most)//2
 
-	#if(fr >= INVALID_ENC):
-		#fr -= MAX_CORNER_ENC
+	if(centered >= INVALID_ENC):
+		centered -= MAX_CORNER_ENC
 	
 	#FRONT_RIGHT = fr;
-	rc.BackwardM1(address[RC5], FRONT_SLOWER)
+	rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
 	while(1):
-		if(center-100 <= rc.ReadEncM2(address[RC5])[1] <= center+100):	
+		if(centered-100 <= rc.ReadEncM2(address[RC5])[1] <= centered+100):	
 			break
 		time.sleep(0.25)
 	rc.BackwardM1(address[RC5], 0)
 	
-	FR_CENTER = centered 
+	FR_CENTER = centered
 	FR_LEFT = left_most
 	FR_RIGHT = right_most
-	print("fr: %s" % (FR_CENTER))
+	#print("fr: %s" % (FR_CENTER))
 	
 	return 0
 
@@ -151,43 +151,45 @@ def calibrate_BR():
 	right_most = 0
 	centered = 0
 	
-	rc.BackwardM2(address[RC5], BACK_CALIBRATION_SPEED)
+	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM2(address[RC5], 0)
 	left_most = rc.ReadEncM1(address[RC5])[1]
 		
-	rc.ForwardM2(address[RC5], BACK_CALIBRATION_SPEED)
-	time.sleep(CALIBRATION_TIME)
-	#start = time.time()
-	#while(time.time()-start<CALIBRATION_TIME):
-		#if(rc.ReadEncM1(address[RC5])[1] >= 1500 and flag==0):
-			#br += MAX_CORNER_ENC
-			#flag = 1
-		#time.sleep(0.1)
+	rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
+	#time.sleep(CALIBRATION_TIME)
+	start = time.time()
+	while(time.time()-start<CALIBRATION_TIME):
+		if(rc.ReadEncM1(address[RC5])[1] >= 1500 and flag==0):
+			centered += MAX_CORNER_ENC
+			flag = 1
+		time.sleep(0.1)
+		print(rc.ReadEncM1(address[RC5])[1])
 
 	rc.ForwardM2(address[RC5], 0)
 	right_most = rc.ReadEncM1(address[RC5])[1]
-	if(right_most <= left_most):
-		right_most += MAX_CORNER_ENC
-	centered = (right_most+left_most) // 2
+	centered += right_most
+	centered = (centered+left_most) // 2
+	print("r: %s   l: %s   c: %s" % (right_most, left_most, centered))
 	#br += rc.ReadEncM1(address[RC5])[1]
 	#br = br//2
-	#if(br >= INVALID_ENC):
-		#br -= MAX_CORNER_ENC
-		
+	if(centered >= INVALID_ENC):
+		centered -= MAX_CORNER_ENC
+
 	#BACK_RIGHT = br
 	#print("br enc: %s" % (BACK_RIGHT))
-	rc.BackwardM2(address[RC5], BACK_SLOWER)
+	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC5])[1] <= centered+100):
 			break
+		print(rc.ReadEncM1(address[RC5])[1])
 		time.sleep(0.25)
 	rc.BackwardM2(address[RC5], 0)
-	
-	BR_CENTER = centered 
+
+	BR_CENTER = centered
 	BR_LEFT = left_most
 	BR_RIGHT = right_most
-	print("fr: %s" % (BR_CENTER))
+	#print("fr: %s" % (BR_CENTER))
 	
 	return 0
 	
@@ -202,44 +204,43 @@ def calibrate_BL():
 	right_most = 0
 	centered = 0
 	
-	rc.BackwardM1(address[RC4], BACK_CALIBRATION_SPEED)
+	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC4], 0)
 	left_most = rc.ReadEncM2(address[RC4])[1]
 		
-	rc.ForwardM1(address[RC4], BACK_CALIBRATION_SPEED)
-	#start = time.time()
-	#while(time.time()-start<CALIBRATION_TIME):
-		#if(rc.ReadEncM2(address[RC4])[1] >= 1500 and flag==0):		
-			#bl += MAX_CORNER_ENC
-			#flag = 1
-		#time.sleep(0.1)
-		#print("1st loop")
+	rc.ForwardM1(address[RC4], CALIBRATION_SPEED)
+	start = time.time()
+	while(time.time()-start<CALIBRATION_TIME):
+		if(rc.ReadEncM2(address[RC4])[1] >= 1500 and flag==0):		
+			centered += MAX_CORNER_ENC
+			flag = 1
+		time.sleep(0.1)
+		print(rc.ReadEncM2(address[RC4])[1])
 
 	rc.ForwardM1(address[RC4], 0)
 	right_most = rc.ReadEncM2(address[RC4])[1]
-	if(right_most <= left_most):
-		right_most += MAX_CORNER_ENC
-	centered = (right_most+left_most) // 2
+	centered += right_most
+	centered = (centered+left_most) // 2
 	
 	#bl += rc.ReadEncM2(address[RC4])[1]
 	#bl = bl//2
-	#if(bl >= INVALID_ENC):
-		#bl -= MAX_CORNER_ENC
+	if(centered >= INVALID_ENC):
+		centered -= MAX_CORNER_ENC
 		
 	#BACK_LEFT = bl
 	#print("bl enc: %s" % (BACK_LEFT))
-	rc.BackwardM1(address[RC4], BACK_SLOWER)
+	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC4])[1] <= centered+100):
 			break
 		time.sleep(0.25)
 	rc.BackwardM1(address[RC4], 0)
 	
-	BL_CENTER = centered 
+	BL_CENTER = centered
 	BL_LEFT = left_most
 	BL_RIGHT = right_most
-	print("fr: %s" % (BL_CENTER))
+	#print("bl: %s" % (BL_CENTER))
 	
 	return 0
 	
@@ -254,12 +255,12 @@ def calibrate_FL():
 	right_most = 0
 	centered = 0
 	
-	rc.BackwardM2(address[RC4], FRONT_CALIBRATION_SPEED)
+	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC4], 0)
 	left_most = rc.ReadEncM1(address[RC4])[1]
 		
-	rc.ForwardM2(address[RC4], FRONT_CALIBRATION_SPEED)
+	rc.ForwardM2(address[RC4], CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	#start = time.time()
 	#while(time.time()-start<CALIBRATION_TIME+2):
@@ -280,7 +281,7 @@ def calibrate_FL():
 		#fl -= MAX_CORNER_ENC
 		
 	#FRONT_LEFT = fl
-	rc.BackwardM2(address[RC4], FRONT_SLOWER)
+	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC4])[1] <= centered+100):
 			break
@@ -290,7 +291,7 @@ def calibrate_FL():
 	FL_CENTER = centered 
 	FL_LEFT = left_most
 	FL_RIGHT = right_most
-	print("fr: %s" % (FL_CENTER))
+	#print("fr: %s" % (FL_CENTER))
 	
 	return 0
 	
@@ -304,7 +305,7 @@ def calibrate_corner_encoders():
 	#calibrate_BL()
 	calibrate_FL()
 	
-	print("front right: %s   back right: %s    front left: %s   back left: %s" % (FRONT_RIGHT, BACK_RIGHT, FRONT_LEFT, BACK_LEFT))	
+	#print("front right: %s   back right: %s    front left: %s   back left: %s" % (FRONT_RIGHT, BACK_RIGHT, FRONT_LEFT, BACK_LEFT))	
 	return 0
 	
 
