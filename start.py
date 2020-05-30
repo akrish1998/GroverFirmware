@@ -4,7 +4,7 @@ import math
 import serial
 import unittest
 from roboclaw import Roboclaw
-import testSuite
+import commands
 import commandBook
 
 """ what user sees: prompt loop where user can send commands to move rover """

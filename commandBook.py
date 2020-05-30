@@ -24,7 +24,7 @@ class COMMAND_BOOK():
 		
 		
 	def parseCommand(self, command):
-		if(command[0] == 'calibrate' and len(command)==1:
+		if(command[0] == 'calibrate' and len(command)==1):
 			return commands.calibrate_corner_encoders()
 		
 		elif(command[0]=='calibrate' and command[1]=='fr'):

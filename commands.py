@@ -98,7 +98,7 @@ def get_enc_by_degree(direction, degree, raw_center, wheel_factor):
 	enc = int(wheel_factor * deg + raw_center)
 	if(enc > MAX_CORNER_ENC):
 		enc = enc - MAX_CORNER_ENC
-	#print(enc)
+	print("degree -> enc: %s" % (enc))
 	return enc
 	
 # value is the read encoder value, no wheel differientiating done here just calculations
@@ -108,6 +108,7 @@ def get_degree_by_enc(value, wheel_factor, raw_right, raw_center):
 		val = val + MAX_CORNER_ENC
 	
 	deg = (val - raw_center) // wheel_factor
+	print("end -> degree: %s" % (deg))
 	return deg
 	
 	
@@ -121,7 +122,7 @@ def get_inner_velo(degree, outer_speed):
 	outer_velo = float(outer_speed)
 	percent_diff = 0.9875*(math.exp(-0.016*deg))
 	inner_velo = percent_diff*outer_velo
-	#print(percent_diff, round(inner_velo, 4))
+	print("outer: %s   inner: %s" % (outer_velo, round(inner_velo, 4)))
 	#print(outer_reg, inner_reg)
 	return inner_velo
 
@@ -137,15 +138,16 @@ def get_arc_time(degree, inner_speed):
 	velo = float(inner_speed)
 	inner_dist = R_HEIGHT/(math.tan(rad))
 	arc_time = (rad*inner_dist) / velo
-	#print(arc_time)
+	print("arc time: %s" % (arc_time))
 	return arc_time
 
 
 def calibrate_FR():
+	print("FR")
 	global FR_CENTER
 	global FR_LEFT
 	global FR_RIGHT
-	global FR_CENTER_RAW 
+	global FR_CENTER_RAW
 	global FL_TOTAL
 	
 	flag = 0
@@ -190,22 +192,23 @@ def calibrate_FR():
 
 	
 def calibrate_BR():
+	print("BR")
 	global BR_CENTER
 	global BR_LEFT
 	global BR_RIGHT
-	global BR_CENTER_RAW 
+	global BR_CENTER_RAW
 	global BL_TOTAL
-	
+
 	flag = 0
 	left_most = 0
 	right_most = 0
 	centered = 0
-	
+
 	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM2(address[RC5], 0)
 	left_most = rc.ReadEncM1(address[RC5])[1]
-		
+
 	rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
 	start = time.time()
 	while(time.time()-start<CALIBRATION_TIME):
@@ -213,7 +216,6 @@ def calibrate_BR():
 			centered += MAX_CORNER_ENC
 			flag = 1
 		time.sleep(0.1)
-		print(rc.ReadEncM1(address[RC5])[1])
 
 	rc.ForwardM2(address[RC5], 0)
 	right_most = rc.ReadEncM1(address[RC5])[1]
@@ -229,7 +231,7 @@ def calibrate_BR():
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC5])[1] <= centered+100):
 			break
-		print(rc.ReadEncM1(address[RC5])[1])
+		print(centered, rc.ReadEncM1(address[RC5])[1])
 		time.sleep(0.25)
 	rc.BackwardM2(address[RC5], 0)
 
@@ -241,6 +243,7 @@ def calibrate_BR():
 	
 	
 def calibrate_BL():
+	print("BL")
 	global BL_CENTER
 	global BL_LEFT
 	global BL_RIGHT
@@ -264,7 +267,6 @@ def calibrate_BL():
 			centered += MAX_CORNER_ENC
 			flag = 1
 		time.sleep(0.1)
-		print(rc.ReadEncM2(address[RC4])[1])
 
 	rc.ForwardM1(address[RC4], 0)
 	right_most = rc.ReadEncM2(address[RC4])[1]
@@ -291,6 +293,7 @@ def calibrate_BL():
 	
 	
 def calibrate_FL():
+	print("FL")
 	global FL_CENTER
 	global FL_LEFT
 	global FL_RIGHT
@@ -342,10 +345,11 @@ def calibrate_FL():
 # goes clockwise from front right
 # remember motors inverted for turning & reading encs
 def calibrate_corner_encoders():
+	articulate_all_corners_right(20, 3)
 	calibrate_FR()
 	calibrate_BR()
 	calibrate_BL()
-	calibrate_FL()	
+	calibrate_FL()
 	calculate_wheel_factor()
 	return 0
 
