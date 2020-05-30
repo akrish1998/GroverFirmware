@@ -1,0 +1,12 @@
+refined commands designed for driving / steering and not for testing purposes
+
+similar format as MEsuite & faceliftedTests but input simpler
+
+Example command:
+turn right 0.1 sharp
+
+first 2 fields indicate command type & direction
+3rd field indicates speed (m/s)
+4th field indicates angle of turn 
+
+For more detail on commands see DESCRIPTIONS
