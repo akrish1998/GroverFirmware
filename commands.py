@@ -177,11 +177,13 @@ def calibrate_FR():
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
 
+	print("center: %s" % (centered))
 	rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC5])[1] <= centered+100):	
 			break
-		time.sleep(0.25)
+		print(rc.ReadEncM2(address[RC5])[1)
+		time.sleep(0.2)
 	rc.BackwardM1(address[RC5], 0)
 	
 	FR_CENTER = centered
@@ -227,12 +229,13 @@ def calibrate_BR():
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
 
+	print("center: %s"%(centered))
 	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC5])[1] <= centered+100):
 			break
-		print(centered, rc.ReadEncM1(address[RC5])[1])
-		time.sleep(0.25)
+		print(rc.ReadEncM1(address[RC5])[1])
+		time.sleep(0.2)
 	rc.BackwardM2(address[RC5], 0)
 
 	BR_CENTER = centered
@@ -278,11 +281,13 @@ def calibrate_BL():
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
 		
+	print("center: %s" % (centered))
 	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC4])[1] <= centered+100):
 			break
-		time.sleep(0.25)
+		print(rc.ReadEncM2(address[RC4])[1])
+		time.sleep(0.2)
 	rc.BackwardM1(address[RC4], 0)
 	
 	BL_CENTER = centered
@@ -327,12 +332,14 @@ def calibrate_FL():
 
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
-		
+	
+	print("center: %s" % (centered))
 	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC4])[1] <= centered+100):
 			break
-		time.sleep(0.25)
+		print(rc.ReadEncM1(address[RC4])[1])
+		time.sleep(0.2)
 	rc.BackwardM2(address[RC4], 0)
 	
 	FL_CENTER = centered 
@@ -345,7 +352,6 @@ def calibrate_FL():
 # goes clockwise from front right
 # remember motors inverted for turning & reading encs
 def calibrate_corner_encoders():
-	articulate_all_corners_right(20, 3)
 	calibrate_FR()
 	calibrate_BR()
 	calibrate_BL()
