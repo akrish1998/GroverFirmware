@@ -148,7 +148,7 @@ def calibrate_FR():
 	global FR_LEFT
 	global FR_RIGHT
 	global FR_CENTER_RAW
-	global FL_TOTAL
+	global FR_TOTAL
 	
 	flag = 0
 	left_most = 0
@@ -159,6 +159,7 @@ def calibrate_FR():
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC5], 0)
 	left_most = rc.ReadEncM2(address[RC5])[1]
+	FR_LEFT = left_most
 
 	rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
 	start = time.time()
@@ -169,37 +170,35 @@ def calibrate_FR():
 	
 	rc.ForwardM1(address[RC5], 0)
 	right_most = rc.ReadEncM2(address[RC5])[1]
+	FR_RIGHT = right_most
 	centered += right_most
 	FR_TOTAL = centered
 	centered = (centered+left_most)//2
 	FR_CENTER_RAW = centered
-	
+
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
 
+	FR_CENTER = centered
 	print("center: %s" % (centered))
 	rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC5])[1] <= centered+100):	
 			break
-		print(rc.ReadEncM2(address[RC5])[1)
+		print(rc.ReadEncM2(address[RC5])[1])
 		time.sleep(0.2)
 	rc.BackwardM1(address[RC5], 0)
-	
-	FR_CENTER = centered
-	FR_LEFT = left_most
-	FR_RIGHT = right_most
-	
+
 	return 0
 
-	
+
 def calibrate_BR():
 	print("BR")
 	global BR_CENTER
 	global BR_LEFT
 	global BR_RIGHT
 	global BR_CENTER_RAW
-	global BL_TOTAL
+	global BR_TOTAL
 
 	flag = 0
 	left_most = 0
@@ -210,6 +209,7 @@ def calibrate_BR():
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM2(address[RC5], 0)
 	left_most = rc.ReadEncM1(address[RC5])[1]
+	BR_LEFT = left_most
 
 	rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
 	start = time.time()
@@ -221,6 +221,7 @@ def calibrate_BR():
 
 	rc.ForwardM2(address[RC5], 0)
 	right_most = rc.ReadEncM1(address[RC5])[1]
+	BR_RIGHT = right_most
 	centered += right_most
 	BR_TOTAL = centered
 	centered = (centered+left_most) // 2
@@ -229,6 +230,7 @@ def calibrate_BR():
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
 
+	BR_CENTER = centered
 	print("center: %s"%(centered))
 	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
 	while(1):
@@ -238,10 +240,6 @@ def calibrate_BR():
 		time.sleep(0.2)
 	rc.BackwardM2(address[RC5], 0)
 
-	BR_CENTER = centered
-	BR_LEFT = left_most
-	BR_RIGHT = right_most
-	
 	return 0
 	
 	
@@ -262,7 +260,8 @@ def calibrate_BL():
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC4], 0)
 	left_most = rc.ReadEncM2(address[RC4])[1]
-		
+	BL_LEFT = left_most
+
 	rc.ForwardM1(address[RC4], CALIBRATION_SPEED)
 	start = time.time()
 	while(time.time()-start<CALIBRATION_TIME):
@@ -273,6 +272,7 @@ def calibrate_BL():
 
 	rc.ForwardM1(address[RC4], 0)
 	right_most = rc.ReadEncM2(address[RC4])[1]
+	BL_RIGHT = right_most
 	centered += right_most
 	BL_TOTAL = centered
 	centered = (centered+left_most) // 2
@@ -280,7 +280,8 @@ def calibrate_BL():
 	
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
-		
+
+	BL_CENTER = centered
 	print("center: %s" % (centered))
 	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
 	while(1):
@@ -289,11 +290,7 @@ def calibrate_BL():
 		print(rc.ReadEncM2(address[RC4])[1])
 		time.sleep(0.2)
 	rc.BackwardM1(address[RC4], 0)
-	
-	BL_CENTER = centered
-	BL_LEFT = left_most
-	BL_RIGHT = right_most
-	
+
 	return 0
 	
 	
@@ -314,7 +311,8 @@ def calibrate_FL():
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC4], 0)
 	left_most = rc.ReadEncM1(address[RC4])[1]
-		
+	FL_LEFT = left_most
+
 	rc.ForwardM2(address[RC4], CALIBRATION_SPEED)
 	start = time.time()
 	while(time.time()-start<CALIBRATION_TIME):
@@ -325,6 +323,7 @@ def calibrate_FL():
 
 	rc.ForwardM2(address[RC4], 0)
 	right_most = rc.ReadEncM1(address[RC4])[1]
+	FL_RIGHT = right_most
 	centered += right_most
 	FL_TOTAL = centered
 	centered = (centered + left_most) // 2
@@ -332,7 +331,8 @@ def calibrate_FL():
 
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
-	
+
+	FL_CENTER = centered
 	print("center: %s" % (centered))
 	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
 	while(1):
@@ -341,11 +341,7 @@ def calibrate_FL():
 		print(rc.ReadEncM1(address[RC4])[1])
 		time.sleep(0.2)
 	rc.BackwardM2(address[RC4], 0)
-	
-	FL_CENTER = centered 
-	FL_LEFT = left_most
-	FL_RIGHT = right_most
-	
+
 	return 0
 	
 	
@@ -484,9 +480,9 @@ def articulate_BL(direction, speed, degree):
 	
 	outer_velo = float(speed)
 	deg = int(degree)
-	encoder_val = get_enc_by_degree(direction, deg, FR_CENTER_RAW, FR_FACTOR)
+	encoder_val = get_enc_by_degree(direction, deg, BL_CENTER_RAW, BL_FACTOR)
 	current_position = rc.ReadEncM2(address[RC4])[1]
-	current_position = get_degree_by_enc(current_position, FR_FACTOR, FR_RIGHT_RAW, FR_CENTER_RAW)
+	current_position = get_degree_by_enc(current_position, BL_FACTOR, BL_RIGHT_RAW, BL_CENTER_RAW)
 	
 	if(current_position < deg):		# turn right
 		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)
@@ -692,7 +688,7 @@ def calculate_wheel_factor():
 	global BL_LEFT
 	global BL_RIGHT_RAW
 	
-	FR_RIGHT_RAW = (FL_TOTAL // 4) * 3
+	FR_RIGHT_RAW = (FR_TOTAL // 4) * 3
 	FR_FACTOR = (FR_LEFT - FR_CENTER_RAW) // -36
 
 	BR_RIGHT_RAW = (BR_TOTAL // 4) * 3
