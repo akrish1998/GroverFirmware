@@ -441,77 +441,56 @@ def articulate_BR(direction, degree):
 def fully_articulate_FL(direction):
 	if(direction == 'right'):
 		rc.ForwardM2(address[RC4], CALIBRATION_SPEED)
-		while(1):
-			if(FL_RIGHT-100 <= rc.ReadEncM1(address[RC4])[1] >= FL_RIGHT+100)
-				break;
-			time.sleep(0.25)
+		time.sleep(CALIBRATION_TIME)
 		rc.ForwardM2(address[RC4], 0)
 	else:
 		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
-		while(1):
-			if(FL_LEFT-100 <= rc.ReadEncM1(address[RC4])[1] >= FL_LEFT+100)
-				break;
-			time.sleep(0.25)
+		time.sleep(CALIBRATION_TIME)
 		rc.BackwardM2(address[RC4], 0)
-		
+
 	return 0
-	
+
+
 def fully_articulate_FR(direction):
 	if(direction == 'right'):
 		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
-		while(1):
-			if(FR_RIGHT-100 <= rc.ReadEncM2(address[RC5])[1] >= FR_RIGHT+100)
-				break;
-			time.sleep(0.25)
+		time.sleep(CALIBRATION_TIME)
 		rc.ForwardM1(address[RC5], 0)
 	else:
 		rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
-		while(1):
-			if(FR_LEFT-100 <= rc.ReadEncM2(address[RC5])[1] >= FR_LEFT+100)
-				break;
-			time.sleep(0.25)
+		time.sleep(CALIBRATION_TIME)
 		rc.BackwardM1(address[RC5], 0)
-		
+
 	return 0
-	
+
+
 def fully_articulate_BL(direction):
 	if(direction == 'right'):
 		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)
-		while(1):
-			if(BL_RIGHT-100 <= rc.ReadEncM2(address[RC4])[1] >= BL_RIGHT+100)
-				break;
-			time.sleep(0.25)
+		time.sleep(CALIBRATION_TIME)
 		rc.ForwardM1(address[RC4], 0)
 	else:
 		rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
-		while(1):
-			if(BL_LEFT-100 <= rc.ReadEncM2(address[RC4])[1] >= BL_LEFT+100)
-				break;
-			time.sleep(0.25)
+		time.sleep(CALIBRATION_TIME)
 		rc.BackwardM1(address[RC4], 0)
-		
+
 	return 0
-	
+
+
 def fully_articulate_BR(direction):
 	if(direction == 'right'):
 		rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
-		while(1):
-			if(BR_RIGHT-100 <= rc.ReadEncM1(address[RC5])[1] >= BR_RIGHT+100)
-				break;
-			time.sleep(0.25)
+		time.sleep(CALIBRATION_TIME)
 		rc.ForwardM2(address[RC5], 0)
 	else:
 		rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
-		while(1):
-			if(BR_LEFT-100 <= rc.ReadEncM1(address[RC5])[1] >= BR_LEFT+100)
-				break;
-			time.sleep(0.25)
+		time.sleep(CALIBRATION_TIME)
 		rc.BackwardM2(address[RC5], 0)
-		
+
 	return 0
-	
-	
-def turn(which, speed, direction, dist):
+
+
+def turn(which, speed, direction, dist, drive):
 	if(direction=='right'):
 		fully_articulate_FL(direction)
 		fully_articulate_FR(direction)
@@ -525,7 +504,10 @@ def turn(which, speed, direction, dist):
 
 
 	if(which == 'special'):
-		return special_arc(direction, speed)
+		if(drive=='forward'):
+			return special_arc_forward(direction, speed)
+		else:
+			return special_arc_backward(direction, speed)
 	else:
 		return arc_forward(speed, direction, dist, MAX_TURN)
 
@@ -673,7 +655,7 @@ def calculate_wheel_factor():
 	return 0
 	
 
-def special_arc(direction, speed):
+def special_arc_forward(direction, speed):
 	outer_speed = float(speed)
 	outer = get_register_speed(outer_speed)
 	inner_speed = get_inner_velo(MAX_TURN, outer_speed)

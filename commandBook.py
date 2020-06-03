@@ -73,7 +73,7 @@ class COMMAND_BOOK():
 			direction, deg = commands.determine_orientation()
 			return commands.arc_forward(command[2], direction, command[3], deg)
 		elif(command[0] == 'special'):
-			return commands.turn(command[0], command[3], command[2], 0)
+			return commands.turn(command[0], command[3], command[2], 0, command[4])
 		
 		else:
 			return -1
