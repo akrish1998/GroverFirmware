@@ -47,6 +47,11 @@ class COMMAND_BOOK():
 		print("speed: 0 - 0.1 m/s")
 		print("distance: > 0 m")
 		print("")
+		print("special arc [direction] [speed] [distance] [drive direction]")
+		print("speed: 0 - 0.1 m/s")
+		print("distance: > 0 m")
+		print("direction: right or left")
+		print("drive direction: forward or backward")
 		
 		
 	def parseCommand(self, command):

@@ -488,36 +488,6 @@ def fully_articulate_BR(direction):
 		rc.BackwardM2(address[RC5], 0)
 
 	return 0
-
-
-def turn(which, speed, direction, dist, drive):
-	if(direction=='right'):
-		fully_articulate_FL(direction)
-		fully_articulate_FR(direction)
-		fully_articulate_BL('left')
-		fully_articulate_BR('left')
-	else:
-		fully_articulate_FL(direction)
-		fully_articulate_FR(direction)
-		fully_articulate_BL('right')
-		fully_articulate_BR('right')
-
-
-	if(which == 'special'):
-		if(drive=='forward'):
-			return special_arc_forward(direction, speed)
-		else:
-			return special_arc_backward(direction, speed)
-	else:
-		return arc_forward(speed, direction, dist, MAX_TURN)
-
-	#inner_speed = get_inner_velo(MAX_TURN, outer_speed)
-	#inner_speed_reg = get_register_speed(inner_speed)
-	#outer_speed_reg = get_register_speed(outer_speed)
-	#the_time = get_arc_time(MAX_TURN, inner_speed)
-	#arc_forward(outer_speed, direction, dist, MAX_TURN)
-	
-	return 0
 	
 
 def arc_forward(outer_speed, direction, dist, degree):
@@ -654,6 +624,36 @@ def calculate_wheel_factor():
 	
 	return 0
 	
+	
+def turn(which, speed, direction, dist, drive):
+	if(direction=='right'):
+		fully_articulate_FL(direction)
+		fully_articulate_FR(direction)
+		fully_articulate_BL('left')
+		fully_articulate_BR('left')
+	else:
+		fully_articulate_FL(direction)
+		fully_articulate_FR(direction)
+		fully_articulate_BL('right')
+		fully_articulate_BR('right')
+
+
+	if(which == 'special'):
+		if(drive=='forward'):
+			return special_arc_forward(direction, speed)
+		else:
+			return special_arc_backward(direction, speed)
+	else:
+		return arc_forward(speed, direction, dist, MAX_TURN)
+
+	#inner_speed = get_inner_velo(MAX_TURN, outer_speed)
+	#inner_speed_reg = get_register_speed(inner_speed)
+	#outer_speed_reg = get_register_speed(outer_speed)
+	#the_time = get_arc_time(MAX_TURN, inner_speed)
+	#arc_forward(outer_speed, direction, dist, MAX_TURN)
+	
+	return 0
+	
 
 def special_arc_forward(direction, speed):
 	outer_speed = float(speed)
@@ -686,6 +686,40 @@ def special_arc_forward(direction, speed):
 	rc.ForwardM2(address[RC2], 0)
 	rc.ForwardM1(address[RC3], 0)
 	rc.ForwardM2(address[RC3], 0)
+
+	return 0
+	
+def special_arc_backward(direction, speed):
+	outer_speed = float(speed)
+	outer = get_register_speed(outer_speed)
+	inner_speed = get_inner_velo(MAX_TURN, outer_speed)
+	inner = get_register_speed(inner_speed)
+	
+	if(direction=='right'):				# right inner, left outer
+		rc.BackwardM1(address[RC1], outer)
+		rc.BackwardM2(address[RC1], outer)
+		rc.BackwardM1(address[RC2], outer)
+		rc.BackwardM2(address[RC2], inner)
+		rc.BackwardM1(address[RC3], inner)
+		rc.BackwardM2(address[RC3], inner)
+	else:
+		rc.BackwardM1(address[RC1], inner)
+		rc.BackwardM2(address[RC1], inner)
+		rc.BackwardM1(address[RC2], inner)
+		rc.BackwardM2(address[RC2], outer)
+		rc.BackwardM1(address[RC3], outer)
+		rc.BackwardM2(address[RC3], outer)
+	
+	stopper = raw_input("stop?  ")
+	while(stopper != "y" and stopper != "yes"):
+		stopper = raw_input("stop?  ")
+	
+	rc.BackwardM1(address[RC1], 0)
+	rc.BackwardM2(address[RC1], 0)
+	rc.BackwardM1(address[RC2], 0)
+	rc.BackwardM2(address[RC2], 0)
+	rc.BackwardM1(address[RC3], 0)
+	rc.BackwardM2(address[RC3], 0)
 
 	return 0
 
