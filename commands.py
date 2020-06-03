@@ -626,23 +626,23 @@ def calculate_wheel_factor():
 
 
 def max_degree_turn(direction):
-	if(direction == 'right'):
-		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)		# FR
-		rc.ForwardM2(address[RC5], CALIBRATION_SPEED)		# FL
-		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)		# BR
-		rc.BackwardM1(address[RC5], CALIBRATION_SPEED)		# BL
-	else:
-		rc.BackwardM1(address[RC4], CALIBRATION_SPEED)		# FR
-		rc.BackwardM2(address[RC5], CALIBRATION_SPEED)		# FL
-		rc.ForwardM2(address[RC4], CALIBRATION_SPEED)		# BR
-		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)		# BL
-		
+	if(direction == 'right'):	# right turn
+		rc.ForwardM2(address[RC4], 9)		# FL
+		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)		# FR
+		rc.BackwardM1(address[RC4], 9)		# BL
+		rc.BackwardM2(address[RC5], 23)		# BR
+	else:				# left turn
+		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)		# FL
+		rc.BackwardM1(address[RC5], 12)		# FR
+		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)		# BL
+		rc.ForwardM2(address[RC5], 7)		# BR
+
 	time.sleep(3)
-	rc.BackwardM1(address[RC4], 0)
-	rc.BackwardM2(address[RC5], 0)
 	rc.BackwardM2(address[RC4], 0)
 	rc.BackwardM1(address[RC5], 0)
-	
+	rc.BackwardM1(address[RC4], 0)
+	rc.BackwardM2(address[RC5], 0)
+
 	return 0
 
 
