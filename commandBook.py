@@ -5,6 +5,8 @@ import serial
 from roboclaw import Roboclaw
 import commands
 
+MAX_TURN = 36
+
 """ 'manual' for avail commands / command cookbook """
 """ 
 to add new func / command: 
@@ -20,7 +22,31 @@ class COMMAND_BOOK():
 
     # dumps this info when user enters help cuz I'm dumb and can't remember every command and its field
 	def print_message(self):
-		print("lol gl")
+		print("Available commands")
+		print("[] field specifies a required parameter to enter")
+		print("<> field specifies an optional parameter to enter")
+		print("")
+		print("calibrate <flag>")
+		print("calibrates all wheels when no flag specified")
+		print("flags: can only call one at a time")
+		print("fr -> front right")
+		print("br -> back right")
+		print("fl -> front left")
+		print("bl -> back left")
+		print("")
+		print("turn [direction] [speed] [distance]")
+		print("direction: right or left")
+		print("speed: 0 - 0.1 m/s")
+		print("distance: > 0 m")
+		print("")
+		print("forward [speed] [distance]")
+		print("speed: 0 - 0.1 m/s")
+		print("distance: > 0 m")
+		print("")
+		print("arc forward [speed] [distance]")
+		print("speed: 0 - 0.1 m/s")
+		print("distance: > 0 m")
+		print("")
 		
 		
 	def parseCommand(self, command):
@@ -38,13 +64,17 @@ class COMMAND_BOOK():
 			
 		elif(command[0]=='calibrate' and command[1]=='bl'):
 			return commands.calibrate_BL()
-			
-		elif(command[0]=='turn' and command[1]=='right'):
-			return commands.turn_right(command[2], command[3])
-			
-		elif(command[0]=='turn' and command[1]=='left'):
-			return commands.turn_left(command[2], command[3])
-			
+
+		elif(command[0]=='turn'):
+			return commands.turn(command[0], command[2], command[1], command[3])
+		elif(command[0] == 'forward'):
+			return commands.forward(command[1], command[2])
+		elif(command[0] == 'arc'):
+			direction, deg = commands.determine_orientation()
+			return commands.arc_forward(command[2], direction, command[3], deg)
+		elif(command[0] == 'special'):
+			return commands.turn(command[0], command[3], command[2], 0)
+		
 		else:
 			return -1
 		return 0

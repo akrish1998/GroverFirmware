@@ -29,13 +29,12 @@ def main():
 				cBook.print_message()
 			else:
 				if(cBook.parseCommand(command) == -1):
-					print("-1 from parse")
 					print("Invalid Command")
 					print("For more info, enter help")
 		print("")
 		command = raw_input("> ")
 
-	testSuite.kill_all()
+	commands.kill_all()
 	print("bye bye")
 	return 0
     
