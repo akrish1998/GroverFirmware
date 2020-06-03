@@ -627,22 +627,40 @@ def calculate_wheel_factor():
 
 def max_degree_turn(direction):
 	if(direction == 'right'):
+		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)		# FR
+		rc.ForwardM2(address[RC5], CALIBRATION_SPEED)		# FL
+		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)		# BR
+		rc.BackwardM1(address[RC5], CALIBRATION_SPEED)		# BL
+	else:
+		rc.BackwardM1(address[RC4], CALIBRATION_SPEED)		# FR
+		rc.BackwardM2(address[RC5], CALIBRATION_SPEED)		# FL
+		rc.ForwardM2(address[RC4], CALIBRATION_SPEED)		# BR
+		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)		# BL
 		
+	time.sleep(3)
+	rc.BackwardM1(address[RC4], 0)
+	rc.BackwardM2(address[RC5], 0)
+	rc.BackwardM2(address[RC4], 0)
+	rc.BackwardM1(address[RC5], 0)
+	
+	return 0
 
 
 
 	
 def turn(which, speed, direction, dist, drive):
-	if(direction=='right'):
-		fully_articulate_FL(direction)
-		fully_articulate_FR(direction)
-		fully_articulate_BL('left')
-		fully_articulate_BR('left')
-	else:
-		fully_articulate_FL(direction)
-		fully_articulate_FR(direction)
-		fully_articulate_BL('right')
-		fully_articulate_BR('right')
+	# if(direction=='right'):
+		# fully_articulate_FL(direction)
+		# fully_articulate_FR(direction)
+		# fully_articulate_BL('left')
+		# fully_articulate_BR('left')
+	# else:
+		# fully_articulate_FL(direction)
+		# fully_articulate_FR(direction)
+		# fully_articulate_BL('right')
+		# fully_articulate_BR('right')
+		
+	max_degree_turn(direction)
 
 
 	if(which == 'special'):
@@ -653,12 +671,6 @@ def turn(which, speed, direction, dist, drive):
 	else:
 		return arc_forward(speed, direction, dist, MAX_TURN)
 
-	#inner_speed = get_inner_velo(MAX_TURN, outer_speed)
-	#inner_speed_reg = get_register_speed(inner_speed)
-	#outer_speed_reg = get_register_speed(outer_speed)
-	#the_time = get_arc_time(MAX_TURN, inner_speed)
-	#arc_forward(outer_speed, direction, dist, MAX_TURN)
-	
 	return 0
 	
 
