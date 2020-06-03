@@ -2,11 +2,19 @@ refined commands designed for driving / steering and not for testing purposes
 
 similar format as MEsuite & faceliftedTests but input simpler
 
-Example command:
-turn right 0.1 sharp
+Example commands:
 
-first 2 fields indicate command type & direction
-3rd field indicates speed (m/s)
-4th field indicates angle of turn 
+turn right 0.08 1.5
+	> first 2 fields indicate command type & direction
+	> 3rd field indicates speed (m/s)
+	> 4th field indicates distance to travel (m)  
+	> orients the rover to turn right, then drives at 0.08 m/s for 1.5 m
 
+forward 0.02 5
+	> drives the rover forward at 0.02 m/s for 5 m
+	> does not adjust the wheel direction / articulation
+	
+center forward 0.1 3
+	> centers the wheels then drives forward at 0.1 m/s for 3 m
+	
 For more detail on commands see DESCRIPTIONS
