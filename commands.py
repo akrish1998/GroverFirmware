@@ -441,11 +441,11 @@ def articulate_BR(direction, degree):
 def fully_articulate_FL(direction):
 	if(direction == 'right'):
 		rc.ForwardM2(address[RC4], CALIBRATION_SPEED)
-		time.sleep(CALIBRATION_TIME)
+		time.sleep(2.5)
 		rc.ForwardM2(address[RC4], 0)
 	else:
 		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
-		time.sleep(CALIBRATION_TIME)
+		time.sleep(2.5)
 		rc.BackwardM2(address[RC4], 0)
 
 	return 0
@@ -454,11 +454,11 @@ def fully_articulate_FL(direction):
 def fully_articulate_FR(direction):
 	if(direction == 'right'):
 		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
-		time.sleep(CALIBRATION_TIME)
+		time.sleep(2.5)
 		rc.ForwardM1(address[RC5], 0)
 	else:
 		rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
-		time.sleep(CALIBRATION_TIME)
+		time.sleep(2.5)
 		rc.BackwardM1(address[RC5], 0)
 
 	return 0
@@ -467,11 +467,11 @@ def fully_articulate_FR(direction):
 def fully_articulate_BL(direction):
 	if(direction == 'right'):
 		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)
-		time.sleep(CALIBRATION_TIME)
+		time.sleep(2.5)
 		rc.ForwardM1(address[RC4], 0)
 	else:
 		rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
-		time.sleep(CALIBRATION_TIME)
+		time.sleep(2.5)
 		rc.BackwardM1(address[RC4], 0)
 
 	return 0
@@ -480,11 +480,11 @@ def fully_articulate_BL(direction):
 def fully_articulate_BR(direction):
 	if(direction == 'right'):
 		rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
-		time.sleep(CALIBRATION_TIME)
+		time.sleep(2.5)
 		rc.ForwardM2(address[RC5], 0)
 	else:
 		rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
-		time.sleep(CALIBRATION_TIME)
+		time.sleep(2.5)
 		rc.BackwardM2(address[RC5], 0)
 
 	return 0
@@ -623,7 +623,14 @@ def calculate_wheel_factor():
 	BL_FACTOR = (BL_LEFT - BL_CENTER_RAW) // -36
 	
 	return 0
-	
+
+
+def max_degree_turn(direction):
+	if(direction == 'right'):
+		
+
+
+
 	
 def turn(which, speed, direction, dist, drive):
 	if(direction=='right'):
