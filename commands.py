@@ -589,9 +589,9 @@ def forward(speed, dist):
 	reg_speed = get_register_speed(velo)
 	timer = get_time(velo, travel)
 	drive_type, deg = determine_orientation()
-	if(drive_type == 'left' or drive_type == 'right')
+	if(drive_type == 'left' or drive_type == 'right'):
 		return arc_forward(velo, drive_type, dist, deg)
-	elif(drive_type == 'unknown')
+	elif(drive_type == 'unknown'):
 		return 0
 	
 	rc.ForwardM1(address[RC1], velo)
@@ -682,16 +682,9 @@ def special_arc(direction, speed):
 	rc.ForwardM2(address[RC2], 0)
 	rc.ForwardM1(address[RC3], 0)
 	rc.ForwardM2(address[RC3], 0)
-	
+
 	return 0
-	
-	
-	
-	
-	
-	
-	
-	
+
 
 
 
