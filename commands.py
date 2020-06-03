@@ -57,7 +57,8 @@ BL_TOTAL = 0
 BL_FACTOR = 0
 
 #calibration parameters
-CALIBRATION_SPEED = 35
+CALIBRATION_SPEED = 30
+SLOWER_CALIBRATION_SPEED = 25
 CALIBRATION_TIME = 4
 MAX_CORNER_ENC = 1550
 INVALID_ENC = 1600
@@ -78,6 +79,7 @@ address = [0x80,0x81,0x82,0x83,0x84]
 
 def get_register_speed(speed):
 	result2 = (0.002+speed) // 0.0009	# based on graph velocity formula for m/s
+	result2 = int(result2)
 	return result2				# velo = 0.0009(reg value) - 0.002
     
     
@@ -177,7 +179,7 @@ def calibrate_FR():
 
 	FR_CENTER = centered
 	print("center: %s" % (centered))
-	rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
+	rc.BackwardM1(address[RC5], SLOWER_CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC5])[1] <= centered+100):	
 			break
@@ -230,7 +232,7 @@ def calibrate_BR():
 
 	BR_CENTER = centered
 	print("center: %s"%(centered))
-	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
+	rc.BackwardM2(address[RC5], SLOWER_CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC5])[1] <= centered+100):
 			break
@@ -280,7 +282,7 @@ def calibrate_BL():
 
 	BL_CENTER = centered
 	print("center: %s" % (centered))
-	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
+	rc.BackwardM1(address[RC4], SLOWER_CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC4])[1] <= centered+100):
 			break
@@ -330,7 +332,7 @@ def calibrate_FL():
 
 	FL_CENTER = centered
 	print("center: %s" % (centered))
-	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
+	rc.BackwardM2(address[RC4], SLOWER_CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC4])[1] <= centered+100):
 			break
@@ -493,20 +495,20 @@ def articulate_BL(direction, degree):
 		rc.BackwardM1(address[RC4], 0)
 	return 0
 
-	
+
+
+
 def turn(which, speed, direction, dist):
 	articulate_FR(direction, MAX_TURN)
 	articulate_BR(direction, MAX_TURN)
 	articulate_FL(direction, MAX_TURN)
 	articulate_BL(direction, MAX_TURN)
-	
-	outer_speed = float(speed)
-	
+
 	if(which == 'special'):
-		return special_arc(direction, outer_speed)
+		return special_arc(direction, speed)
 	else:
-		return arc_forward(outer_speed, direction, dist, MAX_TURN)
-	
+		return arc_forward(speed, direction, dist, MAX_TURN)
+
 	#inner_speed = get_inner_velo(MAX_TURN, outer_speed)
 	#inner_speed_reg = get_register_speed(inner_speed)
 	#outer_speed_reg = get_register_speed(outer_speed)
@@ -653,7 +655,7 @@ def calculate_wheel_factor():
 
 def special_arc(direction, speed):
 	outer_speed = float(speed)
-	outer = get_register_speed(outer)
+	outer = get_register_speed(outer_speed)
 	inner_speed = get_inner_velo(MAX_TURN, outer_speed)
 	inner = get_register_speed(inner_speed)
 	
