@@ -436,73 +436,19 @@ def articulate_BR(direction, degree):
 			time.sleep(0.25)
 		rc.BackwardM2(address[RC5], 0)
 	return 0
-	
-	
-def articulate_FL(direction, degree):
-	global FL_CENTER
-	global FL_CENTER_RAW
-	global FL_FACTOR
-	global FL_RIGHT_RAW
-	
-	deg = int(degree)
-	encoder_val = get_enc_by_degree(direction, deg, FL_CENTER_RAW, FL_FACTOR)
-	current_position = rc.ReadEncM1(address[RC4])[1]
-	current_position = get_degree_by_enc(current_position, FL_FACTOR, FL_RIGHT_RAW, FL_CENTER_RAW)
-	
-	if(current_position < deg):		# turn right
-		rc.ForwardM2(address[RC4], CALIBRATION_SPEED)
-		while(1):
-			if(encoder_val-100 <= rc.ReadEncM1(address[RC4])[1] <= encoder_val+100):
-				break
-			time.sleep(0.25)
-		rc.ForwardM2(address[RC4], 0)
-
-	elif(current_position > deg):		# turn left
-		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
-		while(1):
-			if(encoder_val-100 <= rc.ReadEncM1(address[RC4])[1] <= encoder_val+100):
-				break
-			time.sleep(0.25)
-		rc.BackwardM2(address[RC4], 0)
-	return 0
-	
-	
-def articulate_BL(direction, degree):
-	global BL_CENTER
-	global BL_CENTER_RAW
-	global BL_FACTOR
-	global BL_RIGHT_RAW
-	
-	deg = int(degree)
-	encoder_val = get_enc_by_degree(direction, deg, BL_CENTER_RAW, BL_FACTOR)
-	current_position = rc.ReadEncM2(address[RC4])[1]
-	current_position = get_degree_by_enc(current_position, BL_FACTOR, BL_RIGHT_RAW, BL_CENTER_RAW)
-	
-	if(current_position < deg):		# turn right
-		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)
-		while(1):
-			if(encoder_val-100 <= rc.ReadEncM2(address[RC4])[1] <= encoder_val+100):
-				break
-			time.sleep(0.25)
-		rc.ForwardM1(address[RC4], 0)
-
-	elif(current_position > deg):		# turn left
-		rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
-		while(1):
-			if(encoder_val-100 <= rc.ReadEncM2(address[RC4])[1] <= encoder_val+100):
-				break
-			time.sleep(0.25)
-		rc.BackwardM1(address[RC4], 0)
-	return 0
-
-
 
 
 def turn(which, speed, direction, dist):
-	articulate_FR(direction, MAX_TURN)
-	articulate_BR(direction, MAX_TURN)
-	articulate_FL(direction, MAX_TURN)
-	articulate_BL(direction, MAX_TURN)
+	if(direction=='right'):
+		articulate_FR(direction, MAX_TURN)
+		articulate_BR('left', MAX_TURN)
+		articulate_FL(direction, MAX_TURN)
+		articulate_BL('left', MAX_TURN)
+	else:
+		articulate_FR(direction, MAX_TURN)
+		articulate_BR('right', MAX_TURN)
+		articulate_FL(direction, MAX_TURN)
+		articulate_BL('right', MAX_TURN)
 
 	if(which == 'special'):
 		return special_arc(direction, speed)
