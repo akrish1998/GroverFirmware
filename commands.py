@@ -59,7 +59,7 @@ BL_FACTOR = 0
 #calibration parameters
 CALIBRATION_SPEED = 30
 SLOWER_CALIBRATION_SPEED = 25
-CALIBRATION_TIME = 3
+CALIBRATION_TIME = 4
 MAX_CORNER_ENC = 1550
 INVALID_ENC = 1600
 
@@ -546,9 +546,9 @@ def generic_turn(direction):
 		rc.BackwardM2(address[RC5], 23)			# BR this one rotates beyond its stopper which we want to avoid
 	else:							# left turn, right wheels outer
 		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)	# FL
-		rc.BackwardM1(address[RC5], 9)			# FR
+		rc.BackwardM1(address[RC5], 10)			# FR
 		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)	# BL
-		rc.ForwardM2(address[RC5], 7)			# BR
+		rc.ForwardM2(address[RC5], 8)			# BR
 
 	time.sleep(3)
 	rc.BackwardM2(address[RC4], 0)
