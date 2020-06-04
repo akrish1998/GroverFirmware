@@ -59,7 +59,7 @@ BL_FACTOR = 0
 #calibration parameters
 CALIBRATION_SPEED = 30
 SLOWER_CALIBRATION_SPEED = 25
-CALIBRATION_TIME = 4
+CALIBRATION_TIME = 3
 MAX_CORNER_ENC = 1550
 INVALID_ENC = 1600
 
@@ -80,6 +80,8 @@ address = [0x80,0x81,0x82,0x83,0x84]
 def get_register_speed(speed):
 	result2 = (0.002+speed) // 0.0009	# based on graph velocity formula for m/s
 	result2 = int(result2)
+	if(result2 > 127):
+		result2 = 127
 	return result2				# velo = 0.0009(reg value) - 0.002
     
     
@@ -99,7 +101,6 @@ def get_enc_by_degree(direction, degree, raw_center, wheel_factor):
 	enc = int(wheel_factor * deg + raw_center)
 	if(enc > MAX_CORNER_ENC):
 		enc = enc - MAX_CORNER_ENC
-	print("degree -> enc: %s" % (enc))
 	return enc
 	
 # value is the read encoder value, no wheel differientiating done here just calculations
@@ -109,7 +110,6 @@ def get_degree_by_enc(value, wheel_factor, raw_right, raw_center):
 		val = val + MAX_CORNER_ENC
 	
 	deg = (val - raw_center) // wheel_factor
-	print("end -> degree: %s" % (deg))
 	return deg
 	
 	
@@ -122,7 +122,6 @@ def get_inner_velo(degree, outer_speed):
 	outer_velo = float(outer_speed)
 	percent_diff = 0.9875*(math.exp(-0.016*deg))
 	inner_velo = percent_diff*outer_velo
-	print("outer: %s   inner: %s" % (outer_velo, round(inner_velo, 4)))
 	return inner_velo
 
 	
@@ -136,7 +135,6 @@ def get_arc_time(degree, inner_speed):
 	velo = float(inner_speed)
 	inner_dist = R_HEIGHT/(math.tan(rad))
 	arc_time = (rad*inner_dist) / velo
-	print("arc time: %s" % (arc_time))
 	return arc_time
 
 
@@ -178,12 +176,10 @@ def calibrate_FR():
 		centered -= MAX_CORNER_ENC
 
 	FR_CENTER = centered
-	print("center: %s" % (centered))
 	rc.BackwardM1(address[RC5], SLOWER_CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC5])[1] <= centered+100):	
 			break
-		#print(rc.ReadEncM2(address[RC5])[1])
 		time.sleep(0.25)
 	rc.BackwardM1(address[RC5], 0)
 
@@ -202,7 +198,6 @@ def calibrate_BR():
 	left_most = 0
 	right_most = 0
 	centered = 0
-	#sub_val = 100
 
 	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
@@ -227,16 +222,12 @@ def calibrate_BR():
 
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
-	#if(centered < 100):
-		#sub_val = 0
 
 	BR_CENTER = centered
-	print("center: %s"%(centered))
 	rc.BackwardM2(address[RC5], SLOWER_CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC5])[1] <= centered+100):
 			break
-		#print(rc.ReadEncM1(address[RC5])[1])
 		time.sleep(0.25)
 	rc.BackwardM2(address[RC5], 0)
 
@@ -281,12 +272,10 @@ def calibrate_BL():
 		centered -= MAX_CORNER_ENC
 
 	BL_CENTER = centered
-	print("center: %s" % (centered))
 	rc.BackwardM1(address[RC4], SLOWER_CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC4])[1] <= centered+100):
 			break
-		#print(rc.ReadEncM2(address[RC4])[1])
 		time.sleep(0.25)
 	rc.BackwardM1(address[RC4], 0)
 
@@ -331,12 +320,10 @@ def calibrate_FL():
 		centered -= MAX_CORNER_ENC
 
 	FL_CENTER = centered
-	print("center: %s" % (centered))
 	rc.BackwardM2(address[RC4], SLOWER_CALIBRATION_SPEED)
 	while(1):
 		if(centered-100 <= rc.ReadEncM1(address[RC4])[1] <= centered+100):
 			break
-		#print(rc.ReadEncM1(address[RC4])[1])
 		time.sleep(0.25)
 	rc.BackwardM2(address[RC4], 0)
 
@@ -352,17 +339,9 @@ def calibrate_corner_encoders():
 	calibrate_FL()
 	calculate_wheel_factor()
 	return 0
-
 	
-def ResetEncs():
-	rc.ResetEncoders(address[0])
-	rc.ResetEncoders(address[1])
-	rc.ResetEncoders(address[2])
-	rc.ResetEncoders(address[3])
-	rc.ResetEncoders(address[4])
 	
 # tells all motors to stop, direction does not matter since 0 is default stop
-# for all roboclaw movement commnads
 # invoke: kill or k
 def kill_all():
 	rc.ForwardM1(address[RC1], 0)
@@ -376,214 +355,142 @@ def kill_all():
 	rc.ForwardM1(address[RC5], 0)
 	rc.ForwardM2(address[RC5], 0)
 	return 0
-
-	
-	
-	
-def articulate_FR(direction, degree):
-	global FR_CENTER
-	global FR_CENTER_RAW
-	global FR_FACTOR
-	global FR_RIGHT_RAW
-	
-	deg = int(degree)
-	encoder_val = get_enc_by_degree(direction, deg, FR_CENTER_RAW, FR_FACTOR)
-	current_position = rc.ReadEncM2(address[RC5])[1]
-	current_position = get_degree_by_enc(current_position, FR_FACTOR, FR_RIGHT_RAW, FR_CENTER_RAW)
-	
-	if(current_position < deg):		# turn right
-		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
-		while(1):
-			if(encoder_val-100 <= rc.ReadEncM2(address[RC5])[1] <= encoder_val+100):
-				break
-			time.sleep(0.25)
-		rc.ForwardM1(address[RC5], 0)
-
-	elif(current_position > deg):		# turn left
-		rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
-		while(1):
-			if(encoder_val-100 <= rc.ReadEncM2(address[RC5])[1] <= encoder_val+100):
-				break
-			time.sleep(0.25)
-		rc.BackwardM1(address[RC5], 0)
-	return 0
-	
-	
-def articulate_BR(direction, degree):
-	global BR_CENTER
-	global BR_CENTER_RAW
-	global BR_FACTOR
-	global BR_RIGHT_RAW
-	
-	deg = int(degree)
-	encoder_val = get_enc_by_degree(direction, deg, BR_CENTER_RAW, BR_FACTOR)
-	current_position = rc.ReadEncM1(address[RC5])[1]
-	current_position = get_degree_by_enc(current_position, BR_FACTOR, BR_RIGHT_RAW, BR_CENTER_RAW)
-	
-	if(current_position < deg):		# turn right
-		rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
-		while(1):
-			if(encoder_val-100 <= rc.ReadEncM1(address[RC5])[1] <= encoder_val+100):
-				break
-			time.sleep(0.25)
-		rc.ForwardM2(address[RC5], 0)
-
-	elif(current_position > deg):		# turn left
-		rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
-		while(1):
-			if(encoder_val-100 <= rc.ReadEncM1(address[RC5])[1] <= encoder_val+100):
-				break
-			time.sleep(0.25)
-		rc.BackwardM2(address[RC5], 0)
-	return 0
-
-
-def fully_articulate_FL(direction):
-	if(direction == 'right'):
-		rc.ForwardM2(address[RC4], CALIBRATION_SPEED)
-		time.sleep(2.5)
-		rc.ForwardM2(address[RC4], 0)
-	else:
-		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)
-		time.sleep(2.5)
-		rc.BackwardM2(address[RC4], 0)
-
-	return 0
-
-
-def fully_articulate_FR(direction):
-	if(direction == 'right'):
-		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
-		time.sleep(2.5)
-		rc.ForwardM1(address[RC5], 0)
-	else:
-		rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
-		time.sleep(2.5)
-		rc.BackwardM1(address[RC5], 0)
-
-	return 0
-
-
-def fully_articulate_BL(direction):
-	if(direction == 'right'):
-		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)
-		time.sleep(2.5)
-		rc.ForwardM1(address[RC4], 0)
-	else:
-		rc.BackwardM1(address[RC4], CALIBRATION_SPEED)
-		time.sleep(2.5)
-		rc.BackwardM1(address[RC4], 0)
-
-	return 0
-
-
-def fully_articulate_BR(direction):
-	if(direction == 'right'):
-		rc.ForwardM2(address[RC5], CALIBRATION_SPEED)
-		time.sleep(2.5)
-		rc.ForwardM2(address[RC5], 0)
-	else:
-		rc.BackwardM2(address[RC5], CALIBRATION_SPEED)
-		time.sleep(2.5)
-		rc.BackwardM2(address[RC5], 0)
-
-	return 0
 	
 
-def arc_forward(outer_speed, direction, dist, degree):
-	#outer = float(outer_speed)
-	#inner = float(inner_speed)
-	outer = float(outer_speed)
-	deg = int(degree)
-	outer = get_register_speed(outer)
-	inner_speed = get_inner_velo(degree, outer_speed)
-	inner = get_register_speed(inner_speed)
-	#arc_time = get_arc_time(MAX_TURN, inner_speed)
-	travel = float(dist)
-	total_time = get_time(outer_speed, travel)
+# calculates wheel's current position, whether to turn left or right, then turns to their centers
+def recenter_wheels_prototype():
+	done = 0
+	fl_done = 0
+	bl_done = 0
+	fr_done = 0
+	br_done = 0
 	
-	if(direction=='right'):				# right inner, left outer
-		rc.ForwardM1(address[RC1], outer)
-		rc.ForwardM2(address[RC1], outer)
-		rc.ForwardM1(address[RC2], outer)
-		rc.ForwardM2(address[RC2], inner)
-		rc.ForwardM1(address[RC3], inner)
-		rc.ForwardM2(address[RC3], inner)
-		time.sleep(total_time)
-		rc.ForwardM1(address[RC1], 0)
-		rc.ForwardM2(address[RC1], 0)
-		rc.ForwardM1(address[RC2], 0)
-		rc.ForwardM2(address[RC2], 0)
-		rc.ForwardM1(address[RC3], 0)
-		rc.ForwardM2(address[RC3], 0)
-	else:						# left inner, right outer
-		rc.ForwardM1(address[RC1], inner)
-		rc.ForwardM2(address[RC1], inner)
-		rc.ForwardM1(address[RC2], inner)
-		rc.ForwardM2(address[RC2], outer)
-		rc.ForwardM1(address[RC3], outer)
-		rc.ForwardM2(address[RC3], outer)
-		time.sleep(total_time)
-		rc.ForwardM1(address[RC1], 0)
-		rc.ForwardM2(address[RC1], 0)
-		rc.ForwardM1(address[RC2], 0)
-		rc.ForwardM2(address[RC2], 0)
-		rc.ForwardM1(address[RC3], 0)
-		rc.ForwardM2(address[RC3], 0)
+	read_fl = rc.ReadEncM1
+	read_bl = rc.ReadEncM2
+	read_fr = rc.ReadEncM2
+	read_br = rc.ReadEncM1
+
+	current_fl = read_fl(address[RC4])[1]
+	current_bl = read_bl(address[RC4])[1]
+	current_fr = read_fr(address[RC5])[1]
+	current_br = read_br(address[RC5])[1]
+	
+	if(current_fl + MAX_CORNER_ENC > FL_RIGHT_RAW):		
+		fl = rc.ForwardM2
+	else:										
+		fl = rc.BackwardM2
+		
+		
+	if(current_bl + MAX_CORNER_ENC > BL_RIGHT_RAW):		
+		bl = rc.ForwardM1
+	else:										
+		bl = rc.BackwardM1
+		
+		
+	if(current_fr + MAX_CORNER_ENC > FR_RIGHT_RAW):		
+		fr = rc.ForwardM1
+	else:										
+		fr = rc.BackwardM1
+		
+		
+	if(current_br + MAX_CORNER_ENC > FL_RIGHT_RAW):		
+		br = rc.ForwardM2
+	else:										
+		br = rc.BackwardM2
+		
+		
+	fl(address[RC4], SLOWER_CALIBRATION_SPEED)
+	bl(address[RC4], SLOWER_CALIBRATION_SPEED)
+	fr(address[RC5], SLOWER_CALIBRATION_SPEED)
+	br(address[RC5], SLOWER_CALIBRATION_SPEED)
+		
+	while(done < 4):
+		if(FL_CENTER-100 <= read_fl(address[RC4])[1] <= FL_CENTER + 100 and fl_done == 0):
+			fl(address[RC4], 0)
+			done = done + 1
+			fl_done = 1
+			
+		if(BL_CENTER-100 <= read_bl(address[RC4])[1] <= BL_CENTER + 100 and bl_done == 0):
+			bl(address[RC4], 0)
+			done = done + 1
+			bl_done = 1
+		
+		if(FR_CENTER-100 <= read_fr(address[RC5])[1] <= FR_CENTER + 100 and fr_done == 0):
+			fr(address[RC5], 0)
+			done = done + 1
+			fr_done = 1
+			
+		if(BR_CENTER-100 <= read_br(address[RC5])[1] <= BR_CENTER + 100 and br_done == 0):
+			br(address[RC5], 0)
+			done = done + 1
+			br_done = 1
+			
+	fl(address[RC4], 0)		# just in case ....
+	bl(address[RC4], 0)
+	fr(address[RC5], 0)
+	br(address[RC5], 0)
 		
 	return 0
 	
+
+# less reliant on first encoders read
+# turns all wheels to fully left turn position, then turns to right until centers reached
+def recenter_wheels():
+	done = 0
+	fl_done = 0
+	bl_done = 0
+	fr_done = 0
+	br_done = 0
 	
-def determine_orientation():
-	current_fl_position = rc.ReadEncM1(address[RC4])[1]
-	current_bl_position = rc.ReadEncM2(address[RC4])[1]
-	current_fr_position = rc.ReadEncM2(address[RC5])[1]
-	current_br_position = rc.ReadEncM1(address[RC5])[1]
+	rc.BackwardM1(address[RC4], CALIBRATION_SPEED)	# BL
+	rc.BackwardM2(address[RC4], CALIBRATION_SPEED)	# FL
+	rc.BackwardM1(address[RC5], CALIBRATION_SPEED)	# FR
+	rc.BackwardM2(address[RC5], CALIBRATION_SPEED)	# BR
+	time.sleep(3)
+	rc.BackwardM1(address[RC4], 0)
+	rc.BackwardM1(address[RC4], 0)
+	rc.BackwardM1(address[RC5], 0)
+	rc.BackwardM1(address[RC5], 0)
 	
-	fl_deg = get_degree_by_enc(current_fl_position)
-	bl_deg = get_degree_by_enc(current_bl_position)
-	fr_deg = get_degree_by_enc(current_fr_position)
-	br_deg = get_degree_by_enc(current_br_position)
+	read_fl = rc.ReadEncM1
+	read_bl = rc.ReadEncM2
+	read_fr = rc.ReadEncM2
+	read_br = rc.ReadEncM1
 	
+	rc.ForwardM1(address[RC4], SLOWER_CALIBRATION_SPEED)	# BL
+	rc.ForwardM2(address[RC4], SLOWER_CALIBRATION_SPEED)	# FL
+	rc.ForwardM1(address[RC5], SLOWER_CALIBRATION_SPEED)	# FR
+	rc.ForwardM2(address[RC5], SLOWER_CALIBRATION_SPEED)	# BR
 	
-	if((fl_deg > 0 and fr_deg > 0) and (bl_deg < 0 and br_deg < 0)):
-		return ('right', fr_deg)
-	elif((fl_deg < 0 and fr_deg < 0) and (bl_deg > 0 and br_deg > 0)):
-		return ('left', fr_deg)
-	elif((-2 <= fl_deg <= 2) and (-2 <= fr_deg <= 2)):
-		if((-2 <= bl_deg <= 2) and (-2 <= br_deg <= 2)):
-			return ('center', 0)
-	return ('unknown', 0)
-	
-	
-	
-def forward(speed, dist):
-	velo = float(speed)
-	travel = float(dist)
-	reg_speed = get_register_speed(velo)
-	timer = get_time(velo, travel)
-	drive_type, deg = determine_orientation()
-	if(drive_type == 'left' or drive_type == 'right'):
-		return arc_forward(velo, drive_type, dist, deg)
-	elif(drive_type == 'unknown'):
-		return 0
-	
-	rc.ForwardM1(address[RC1], velo)
-	rc.ForwardM2(address[RC1], velo)
-	rc.ForwardM1(address[RC2], velo)
-	rc.ForwardM2(address[RC2], velo)
-	rc.ForwardM1(address[RC3], velo)
-	rc.ForwardM2(address[RC3], velo)
-	time.sleep(timer)
-	rc.ForwardM1(address[RC1], 0)
-	rc.ForwardM2(address[RC1], 0)
-	rc.ForwardM1(address[RC2], 0)
-	rc.ForwardM2(address[RC2], 0)
-	rc.ForwardM1(address[RC3], 0)
-	rc.ForwardM2(address[RC3], 0)
-	
-	return 0
-	
+	while(done < 4):
+		if((FL_CENTER-100 <= read_fl(address[RC4])[1] <= FL_CENTER + 100) and fl_done == 0):
+			rc.ForwardM2(address[RC4], 0)
+			done = done + 1
+			fl_done = 1
+			
+		if((BL_CENTER-100 <= read_bl(address[RC4])[1] <= BL_CENTER + 100) and bl_done == 0):
+			rc.ForwardM1(address[RC4], 0)
+			done = done + 1
+			bl_done = 1
+		
+		if((FR_CENTER-100 <= read_fr(address[RC5])[1] <= FR_CENTER + 100) and fr_done == 0):
+			rc.ForwardM2(address[RC5], 0)
+			done = done + 1
+			fr_done = 1
+			
+		if((BR_CENTER-100 <= read_br(address[RC5])[1] <= BR_CENTER + 100) and br_done == 0):
+			rc.BackwardM2(address[RC5], 0)
+			done = done + 1
+			br_done = 1
+			
+			
+	fl(address[RC4], 0)		# just in case ....
+	bl(address[RC4], 0)
+	fr(address[RC5], 0)
+	br(address[RC5], 0)
+		
+	return 0	
+		
 	
 def calculate_wheel_factor():
 	global FR_CENTER_RAW
@@ -625,17 +532,23 @@ def calculate_wheel_factor():
 	return 0
 
 
-def max_degree_turn(direction):
-	if(direction == 'right'):	# right turn
-		rc.ForwardM2(address[RC4], 9)		# FL
-		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)		# FR
-		rc.BackwardM1(address[RC4], 9)		# BL
-		rc.BackwardM2(address[RC5], 23)		# BR
-	else:				# left turn
-		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)		# FL
-		rc.BackwardM1(address[RC5], 12)		# FR
-		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)		# BL
-		rc.ForwardM2(address[RC5], 7)		# BR
+# rotates corner wheels to guessed positions for an arc turn
+# inner wheel rotation > outer wheel rotation
+#	- inner wheels rotated to their fully turned position (36)
+#	- outer wheels rotated slightly less than the inner wheels
+#	  done by reducing wheel rotation speed
+#	(what that angle and speed is, we don't know :P)
+def generic_turn(direction):
+	if(direction == 'right'):				# right turn, left wheels outer
+		rc.ForwardM2(address[RC4], 9)			# FL
+		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)	# FR
+		rc.BackwardM1(address[RC4], 9)			# BL
+		rc.BackwardM2(address[RC5], 23)			# BR this one rotates beyond its stopper which we want to avoid
+	else:							# left turn, right wheels outer
+		rc.BackwardM2(address[RC4], CALIBRATION_SPEED)	# FL
+		rc.BackwardM1(address[RC5], 9)			# FR
+		rc.ForwardM1(address[RC4], CALIBRATION_SPEED)	# BL
+		rc.ForwardM2(address[RC5], 7)			# BR
 
 	time.sleep(3)
 	rc.BackwardM2(address[RC4], 0)
@@ -646,48 +559,35 @@ def max_degree_turn(direction):
 	return 0
 
 
+# turns wheels according to turning direction using generic function (not user specified)
+# directs command to arc turn speeds and which direction (drive direction, forward/backward)
+def turn(speed, direction, dist, drive):	
+	generic_turn(direction)
 
-	
-def turn(which, speed, direction, dist, drive):
-	# if(direction=='right'):
-		# fully_articulate_FL(direction)
-		# fully_articulate_FR(direction)
-		# fully_articulate_BL('left')
-		# fully_articulate_BR('left')
-	# else:
-		# fully_articulate_FL(direction)
-		# fully_articulate_FR(direction)
-		# fully_articulate_BL('right')
-		# fully_articulate_BR('right')
-		
-	max_degree_turn(direction)
-
-
-	if(which == 'special'):
-		if(drive=='forward'):
-			return special_arc_forward(direction, speed)
-		else:
-			return special_arc_backward(direction, speed)
+	if(drive=='forward'):
+		return arc_turn_forward(direction, speed)
 	else:
-		return arc_forward(speed, direction, dist, MAX_TURN)
+		return arc_turn_backward(direction, speed)
 
 	return 0
 	
 
-def special_arc_forward(direction, speed):
+# drives rover forward at specified speed until user tells it to stop
+# at some point can have a specified distance to turn until, so time limit used from there 
+def arc_turn_forward(direction, speed):
 	outer_speed = float(speed)
 	outer = get_register_speed(outer_speed)
 	inner_speed = get_inner_velo(MAX_TURN, outer_speed)
 	inner = get_register_speed(inner_speed)
 	
-	if(direction=='right'):				# right inner, left outer
+	if(direction=='right'):				# right turn: right inner, left outer
 		rc.ForwardM1(address[RC1], outer)
 		rc.ForwardM2(address[RC1], outer)
 		rc.ForwardM1(address[RC2], outer)
 		rc.ForwardM2(address[RC2], inner)
 		rc.ForwardM1(address[RC3], inner)
 		rc.ForwardM2(address[RC3], inner)
-	else:
+	else:						# left turn: left inner, right outer
 		rc.ForwardM1(address[RC1], inner)
 		rc.ForwardM2(address[RC1], inner)
 		rc.ForwardM1(address[RC2], inner)
@@ -697,7 +597,7 @@ def special_arc_forward(direction, speed):
 	
 	stopper = raw_input("stop?  ")
 	while(stopper != "y" and stopper != "yes"):
-		stopper = raw_input("stop?  ")
+		stopper = raw_input("stop? (y/n):  ")
 	
 	rc.ForwardM1(address[RC1], 0)
 	rc.ForwardM2(address[RC1], 0)
@@ -708,20 +608,21 @@ def special_arc_forward(direction, speed):
 
 	return 0
 	
-def special_arc_backward(direction, speed):
+# same as above but backwards
+def arc_turn_backward(direction, speed):
 	outer_speed = float(speed)
 	outer = get_register_speed(outer_speed)
 	inner_speed = get_inner_velo(MAX_TURN, outer_speed)
 	inner = get_register_speed(inner_speed)
 	
-	if(direction=='right'):				# right inner, left outer
+	if(direction=='right'):				# right turn: right inner, left outer
 		rc.BackwardM1(address[RC1], outer)
 		rc.BackwardM2(address[RC1], outer)
 		rc.BackwardM1(address[RC2], outer)
 		rc.BackwardM2(address[RC2], inner)
 		rc.BackwardM1(address[RC3], inner)
 		rc.BackwardM2(address[RC3], inner)
-	else:
+	else:						# left turn: left inner, right outer
 		rc.BackwardM1(address[RC1], inner)
 		rc.BackwardM2(address[RC1], inner)
 		rc.BackwardM1(address[RC2], inner)
@@ -740,6 +641,35 @@ def special_arc_backward(direction, speed):
 	rc.BackwardM1(address[RC3], 0)
 	rc.BackwardM2(address[RC3], 0)
 
+	return 0
+	
+	
+# prototype of how articulation could be done when any angle between -36/+36 from any current position
+# not tested too much, def not reliable, but general algorithm is effective
+# see documentation for how these equations were derived
+def articulate_FR(direction, speed, degree):
+	
+	outer_velo = float(speed)
+	deg = int(degree)
+	encoder_val = get_enc_by_degree(direction, deg, FR_CENTER_RAW, FR_FACTOR)
+	current_position = rc.ReadEncM2(address[RC5])[1]
+	current_position = get_degree_by_enc(current_position, FR_FACTOR, FR_RIGHT_RAW, FR_CENTER_RAW)
+	
+	if(current_position < deg):		# turn right
+		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
+		while(1):
+			if(encoder_val-100 <= rc.ReadEncM2(address[RC5])[1] <= encoder_val+100):
+				break
+			time.sleep(0.25)
+		rc.ForwardM1(address[RC5], 0)
+
+	elif(current_position > deg):		# turn left
+		rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
+		while(1):
+			if(encoder_val-100 <= rc.ReadEncM2(address[RC5])[1] <= encoder_val+100):
+				break
+			time.sleep(0.25)
+		rc.BackwardM1(address[RC5], 0)
 	return 0
 
 

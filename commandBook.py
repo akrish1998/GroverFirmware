@@ -34,24 +34,16 @@ class COMMAND_BOOK():
 		print("fl -> front left")
 		print("bl -> back left")
 		print("")
-		print("turn [direction] [speed] [distance]")
-		print("direction: right or left")
-		print("speed: 0 - 0.1 m/s")
-		print("distance: > 0 m")
-		print("")
-		print("forward [speed] [distance]")
-		print("speed: 0 - 0.1 m/s")
-		print("distance: > 0 m")
-		print("")
-		print("arc forward [speed] [distance]")
-		print("speed: 0 - 0.1 m/s")
-		print("distance: > 0 m")
-		print("")
-		print("special arc [direction] [speed] [distance] [drive direction]")
-		print("speed: 0 - 0.1 m/s")
-		print("distance: > 0 m")
-		print("direction: right or left")
+		print("arc turn [drive direction] [turn direction] [speed]")
 		print("drive direction: forward or backward")
+		print("turn direction: right or left")
+		print("speed: 0 - 0.1 m/s")
+		print("")
+		print("recenter")
+		print("recenters corner wheels")
+		print("")
+		
+		
 		
 		
 	def parseCommand(self, command):
@@ -70,15 +62,14 @@ class COMMAND_BOOK():
 		elif(command[0]=='calibrate' and command[1]=='bl'):
 			return commands.calibrate_BL()
 
-		elif(command[0]=='turn'):
-			return commands.turn(command[0], command[2], command[1], command[3])
-		elif(command[0] == 'forward'):
-			return commands.forward(command[1], command[2])
 		elif(command[0] == 'arc'):
-			direction, deg = commands.determine_orientation()
-			return commands.arc_forward(command[2], direction, command[3], deg)
-		elif(command[0] == 'special'):
-			return commands.turn(command[0], command[3], command[2], 0, command[4])
+			return commands.turn(command[4], command[3], 0, command[2])
+			
+		elif(command[0]=='recenter' and len(command)==1):
+			return commands.recenter_wheels()		# turns all wheels fully left, then to center
+			
+		elif(command[0]=='recenter'):				# rotates from current wheel position to center
+			return commands.recenter_wheels_prototype()
 		
 		else:
 			return -1
