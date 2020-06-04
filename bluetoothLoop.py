@@ -23,6 +23,8 @@ rc.Open()
 
 def main():
 
+        global bt_sock
+
 	bluetoothConnection()
 
 	#READING COMMANDS
@@ -42,7 +44,7 @@ def main():
 			if (velocity < 0):
 				print("Moving backwards!")
 				moveBackward(abs(velocity))
-				print("Finished mving backwards")
+				print("Finished moving backwards")
 			elif (velocity > 0):
 				print("Moving forwards!")
 				moveForward(abs(velocity))
@@ -68,6 +70,8 @@ def main():
 		pass
 
 def bluetoothConnection():
+        
+        print("Setting up bluetooth connection")
 
 	global bt_sock
 
