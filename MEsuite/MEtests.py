@@ -112,7 +112,7 @@ def dynamicWheelTest_LowSpeed():
 # MAX_SPEED is 'macro' defined above as a register value, feel free to change it
 # to travel 1 meter at reg speed 100 (0.085 m/s), rover rolls for roughly 11.5 seconds (see velocity graph)
 # to invoke: high speed
- def dynamicWheelTest_HighSpeed():
+def dynamicWheelTest_HighSpeed():
 	print("Running forward at high speed: %s" % (((time.ctime()).split(' '))[3]))
 	sys.stdout.flush()
 	rc.ForwardM1(address[RC1], MAX_SPEED)
@@ -154,8 +154,10 @@ def dynamicWheelTest_LowSpeed():
 
 
 def dynamicWheelTest(speed, dist):	
+	print(" ")
 	print("running dynamic wheel test")
 	regSpeed = getRegisterSpeed(speed);
+	regSpeed = int(regSpeed)
 	msSpeed = getVeloInMS(regSpeed)
 	howLong = getTime(speed, dist)
 	print("Running forward test at %.4f m/s" % (speed))
@@ -174,7 +176,7 @@ def dynamicWheelTest(speed, dist):
 	rc.ForwardM2(address[RC3], 0)
 	print("Finished forward")
 	
-	time.sleep(5)
+	time.sleep(3)
 	print("Running backward test at %.4f m/s" % (speed))
 	rc.BackwardM1(address[RC1], regSpeed)
 	rc.BackwardM2(address[RC1], regSpeed)

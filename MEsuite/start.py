@@ -26,7 +26,7 @@ def main():
 				print("Invalid Command")
 				print("For more info, enter help")
 		print("")
-		command = raw_input("Enter Command ")
+		command = raw_input("Enter Command: ")
 
 	MEtests.kill_all()
 	print("bye bye")

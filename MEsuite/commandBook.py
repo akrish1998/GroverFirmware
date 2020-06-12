@@ -48,7 +48,7 @@ class COMMAND_BOOK():
 	
 
 	def asker(self, command):
-		stuff = input("What speed (m/s) and how far (m): ")
+		stuff = raw_input("What speed (m/s) and how far (m): ")
 		stuff = stuff.strip()
 		if(len(stuff)<=0):
 			print("Using default speed and distance: 0.05 m/s   1 m")
@@ -57,26 +57,25 @@ class COMMAND_BOOK():
 			return self.runCommand(command)
 		
 		stuff = stuff.split(" ")
-		print(stuff, len(stuff))
 		if(len(stuff)!=2):
 			print("Error: press enter to use default speed & time")
 			print("       or specify a speed & time (with a space in between ^_^)")
-			return -1
+			return 0
 		
 		speed = float(stuff[0])
 		dist = float(stuff[1])
-		if(speed>MAX_SPEED_MS):
+		if(speed>MAX_SPEED_MS or speed<0):
 			print("Invalid speed")
 			print("Valid speeds: 0 m/s - 0.1 m/s")
-			return -1
+			return 0
 		command.append(speed)
 		
 		if(dist<=0):
 			print("Invalid distance")
 			print("Enter distance > 0")
-			return -1
+			return 0
 		command.append(dist)
-		return self.runCommand(command)
+		return self.run_command(command)
 
 	
 	def parseCommand(self, command):
