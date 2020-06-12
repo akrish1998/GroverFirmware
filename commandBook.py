@@ -23,30 +23,50 @@ class COMMAND_BOOK():
     # dumps this info when user enters help cuz I'm dumb and can't remember every command and its field
 	def print_message(self):
 		print("Available commands")
-		print("[] field specifies a required parameter to enter")
-		print("<> field specifies an optional parameter to enter")
+		print("[] -> required parameter")
+		print("<> -> optional parameter")
+		print("do NOT include [] & <> in actual command")
 		print("")
-		print("calibrate <flag>")
-		print("calibrates all wheels when no flag specified")
-		print("flags: can only call one at a time")
-		print("fr -> front right")
-		print("br -> back right")
-		print("fl -> front left")
-		print("bl -> back left")
+		print("calibrate")
+		print("calibrates all wheels")
 		print("")
-		print("arc turn [drive direction] [turn direction] [speed]")
+		print("calibrate fr")
+		print("calibrates front right wheel")
+		print("calibrate br")
+		print("calibrates back right wheel")
+		print("calibrate fl")
+		print("calibrates front left wheel")
+		print("calibrate bl")
+		print("calibrates back left wheel")
+		print("")
+		print("forward [speed] [distance]")
+		print("drives rover straight forward")
+		print("speed: 0 - 0.1 m/s")
+		print("distance: any value above 0 in m")
+		print("")
+		print("backward [speed] [distance]")
+		print("drives rover straight backward")
+		print("speed: 0 - 0.1 m/s")
+		print("distance: any value above 0 in m")
+		print("")
+		print("arc turn [drive direction] [turn direction] [speed] <distance>")
 		print("drive direction: forward or backward")
 		print("turn direction: right or left")
 		print("speed: 0 - 0.1 m/s")
+		print("optional distance: any value above 0 in m")
 		print("")
 		print("recenter")
 		print("recenters corner wheels")
+		print("NOT FUNCTIONAL USE AT YOUR OWN RISK")
+		print("")
+		print("For even more info see DESCRIPTIONS file")
 		print("")
 		
 		
 		
 		
 	def parseCommand(self, command):
+		#try:
 		if(command[0] == 'calibrate' and len(command)==1):
 			return commands.calibrate_corner_encoders()
 		
@@ -62,16 +82,27 @@ class COMMAND_BOOK():
 		elif(command[0]=='calibrate' and command[1]=='bl'):
 			return commands.calibrate_BL()
 
-		elif(command[0] == 'arc'):
+		elif(command[0] == 'arc' and len(command)==5):
 			return commands.turn(command[4], command[3], 0, command[2])
+			
+		elif(command[0]=='arc' and len(command)==6):
+			return commands.turn(command[4], command[3], command[5], command[2])
 			
 		elif(command[0]=='recenter' and len(command)==1):
 			return commands.recenter_wheels()		# turns all wheels fully left, then to center
 			
 		elif(command[0]=='recenter'):				# rotates from current wheel position to center
 			return commands.recenter_wheels_prototype()
+			
+		elif(command[0]=='forward'):
+			return commands.forward(command[1], command[2])
+			
+		elif(command[0]=='backward'):
+			return commands.backward(ommand[1], command[2])
 		
 		else:
 			return -1
 		return 0
-        
+		# except:
+			# commands.kill_all()
+			# return -1

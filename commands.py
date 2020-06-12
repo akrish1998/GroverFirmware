@@ -491,7 +491,8 @@ def recenter_wheels():
 		
 	return 0	
 		
-	
+
+# see documentation on articulation calculations for description & derivation		
 def calculate_wheel_factor():
 	global FR_CENTER_RAW
 	global FR_TOTAL
@@ -532,6 +533,54 @@ def calculate_wheel_factor():
 	return 0
 
 
+# drives rover straight forward at specified speed for specified distance	
+def forward(speed, dist):
+	regSpeed = get_register_speed(speed);
+	regSpeed = int(regSpeed)
+	howLong = get_time(speed, dist)
+
+	print("Driving forward at %.4f m/s for %.2f meters" % (speed, howLong))
+
+	rc.ForwardM1(address[RC1], regSpeed)
+	rc.ForwardM2(address[RC1], regSpeed)
+	rc.ForwardM1(address[RC2], regSpeed)
+	rc.ForwardM2(address[RC2], regSpeed)
+	rc.ForwardM1(address[RC3], regSpeed)
+	rc.ForwardM2(address[RC3], regSpeed)
+	time.sleep(howLong)
+	rc.ForwardM1(address[RC1], 0)
+	rc.ForwardM2(address[RC1], 0)
+	rc.ForwardM1(address[RC2], 0)
+	rc.ForwardM2(address[RC2], 0)
+	rc.ForwardM1(address[RC3], 0)
+	rc.ForwardM2(address[RC3], 0)
+	return 0
+	
+
+# drives rover straight backward at specified speed for specified distance
+def backward(speed, dist):
+	regSpeed = get_register_speed(speed);
+	regSpeed = int(regSpeed)
+	howLong = get_time(speed, dist)
+
+	print("Driving backward at %.4f m/s for %.2f meters" % (speed, howLong))
+
+	rc.BackwardM1(address[RC1], regSpeed)
+	rc.BackwardM2(address[RC1], regSpeed)
+	rc.BackwardM1(address[RC2], regSpeed)
+	rc.BackwardM2(address[RC2], regSpeed)
+	rc.BackwardM1(address[RC3], regSpeed)
+	rc.BackwardM2(address[RC3], regSpeed)
+	time.sleep(howLong)
+	rc.BackwardM1(address[RC1], 0)
+	rc.BackwardM2(address[RC1], 0)
+	rc.BackwardM1(address[RC2], 0)
+	rc.BackwardM2(address[RC2], 0)
+	rc.BackwardM1(address[RC3], 0)
+	rc.BackwardM2(address[RC3], 0)
+	return 0
+	
+
 # rotates corner wheels to guessed positions for an arc turn
 # inner wheel rotation > outer wheel rotation
 #	- inner wheels rotated to their fully turned position (36)
@@ -564,15 +613,19 @@ def generic_turn(direction):
 def turn(speed, direction, dist, drive):	
 	generic_turn(direction)
 
-	if(drive=='forward'):
-		return arc_turn_forward(direction, speed)
+	if(dist==0):
+		if(drive=='forward'):
+			return arc_turn_forward(direction, speed)
+		else:
+			return arc_turn_backward(direction, speed)
 	else:
-		return arc_turn_backward(direction, speed)
-
+		if(drive=='forward'):
+			return arc_turn_forward_dist(direction, speed, dist)
+		else:
+			return arc_turn_backward_dist(direction, speed, dist)
 	return 0
-	
 
-# drives rover forward at specified speed until user tells it to stop
+# drives rover forward for arc turns at specified speed until user tells it to stop
 # at some point can have a specified distance to turn until, so time limit used from there 
 def arc_turn_forward(direction, speed):
 	outer_speed = float(speed)
@@ -642,6 +695,78 @@ def arc_turn_backward(direction, speed):
 	rc.BackwardM2(address[RC3], 0)
 
 	return 0
+	
+
+# drives rover forward for arc turn at specified speed for specified distance
+def arc_turn_forward_dist(direction, speed, dist):
+	outer_speed = float(speed)
+	outer = get_register_speed(outer_speed)
+	inner_speed = get_inner_velo(MAX_TURN, outer_speed)
+	inner = get_register_speed(inner_speed)
+	timer = get_time(speed, dist)
+	
+	if(direction=='right'):				# right turn: right inner, left outer
+		rc.ForwardM1(address[RC1], outer)
+		rc.ForwardM2(address[RC1], outer)
+		rc.ForwardM1(address[RC2], outer)
+		rc.ForwardM2(address[RC2], inner)
+		rc.ForwardM1(address[RC3], inner)
+		rc.ForwardM2(address[RC3], inner)
+	else:						# left turn: left inner, right outer
+		rc.ForwardM1(address[RC1], inner)
+		rc.ForwardM2(address[RC1], inner)
+		rc.ForwardM1(address[RC2], inner)
+		rc.ForwardM2(address[RC2], outer)
+		rc.ForwardM1(address[RC3], outer)
+		rc.ForwardM2(address[RC3], outer)
+
+	time.sleep(timer)
+	
+	rc.BackwardM1(address[RC1], 0)
+	rc.BackwardM2(address[RC1], 0)
+	rc.BackwardM1(address[RC2], 0)
+	rc.BackwardM2(address[RC2], 0)
+	rc.BackwardM1(address[RC3], 0)
+	rc.BackwardM2(address[RC3], 0)
+	
+	return 0
+
+
+# drives rover backward for arc turn at specified speed for specified distance
+def arc_turn_backward_dist(direction, speed, dist):
+	outer_speed = float(speed)
+	outer = get_register_speed(outer_speed)
+	inner_speed = get_inner_velo(MAX_TURN, outer_speed)
+	inner = get_register_speed(inner_speed)
+	timer = get_time(speed, dist)
+	
+	if(direction=='right'):				# right turn: right inner, left outer
+		rc.BackwardM1(address[RC1], outer)
+		rc.BackwardM2(address[RC1], outer)
+		rc.BackwardM1(address[RC2], outer)
+		rc.BackwardM2(address[RC2], inner)
+		rc.BackwardM1(address[RC3], inner)
+		rc.BackwardM2(address[RC3], inner)
+	else:						# left turn: left inner, right outer
+		rc.BackwardM1(address[RC1], inner)
+		rc.BackwardM2(address[RC1], inner)
+		rc.BackwardM1(address[RC2], inner)
+		rc.BackwardM2(address[RC2], outer)
+		rc.BackwardM1(address[RC3], outer)
+		rc.BackwardM2(address[RC3], outer)
+		
+	time.sleep(timer)
+	
+	rc.BackwardM1(address[RC1], 0)
+	rc.BackwardM2(address[RC1], 0)
+	rc.BackwardM1(address[RC2], 0)
+	rc.BackwardM2(address[RC2], 0)
+	rc.BackwardM1(address[RC3], 0)
+	rc.BackwardM2(address[RC3], 0)
+	
+	return 0
+	
+	
 	
 	
 # prototype of how articulation could be done when any angle between -36/+36 from any current position

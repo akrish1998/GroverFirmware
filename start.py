@@ -29,7 +29,7 @@ def main():
 				cBook.print_message()
 			else:
 				if(cBook.parseCommand(command) == -1):
-					print("Invalid Command")
+					print("Unrecognized Command")
 					print("For more info, enter help")
 		print("")
 		command = raw_input("> ")
