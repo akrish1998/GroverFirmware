@@ -23,9 +23,8 @@ class COMMAND_BOOK():
     # dumps this info when user enters help cuz I'm dumb and can't remember every command and its field
 	def print_message(self):
 		print("Available commands")
-		print("[] -> required parameter")
 		print("<> -> optional parameter")
-		print("do NOT include [] & <> in actual command")
+		print("do NOT include <> in actual command")
 		print("")
 		print("calibrate")
 		print("calibrates all wheels")
@@ -39,17 +38,17 @@ class COMMAND_BOOK():
 		print("calibrate bl")
 		print("calibrates back left wheel")
 		print("")
-		print("forward [speed] [distance]")
+		print("forward speed distance")
 		print("drives rover straight forward")
 		print("speed: 0 - 0.1 m/s")
 		print("distance: any value above 0 in m")
 		print("")
-		print("backward [speed] [distance]")
+		print("backward speed distance")
 		print("drives rover straight backward")
 		print("speed: 0 - 0.1 m/s")
 		print("distance: any value above 0 in m")
 		print("")
-		print("arc turn [drive direction] [turn direction] [speed] <distance>")
+		print("arc turn drive direction turn direction speed <distance>")
 		print("drive direction: forward or backward")
 		print("turn direction: right or left")
 		print("speed: 0 - 0.1 m/s")
@@ -101,8 +100,10 @@ class COMMAND_BOOK():
 			return commands.backward(ommand[1], command[2])
 		
 		else:
+			print("Unrecognized Command")
 			return -1
 		return 0
 		# except:
 			# commands.kill_all()
+			# print("ERROR")
 			# return -1

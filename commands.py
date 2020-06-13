@@ -535,6 +535,11 @@ def calculate_wheel_factor():
 
 # drives rover straight forward at specified speed for specified distance	
 def forward(speed, dist):
+
+	if(dist <= 0):
+		print("Invalid distance entered: %.2f", % (dist))
+		return -1
+
 	regSpeed = get_register_speed(speed);
 	regSpeed = int(regSpeed)
 	howLong = get_time(speed, dist)
@@ -559,6 +564,10 @@ def forward(speed, dist):
 
 # drives rover straight backward at specified speed for specified distance
 def backward(speed, dist):
+	if(dist <= 0):
+		print("Invalid distance entered: %.2f", % (dist))
+		return -1
+
 	regSpeed = get_register_speed(speed);
 	regSpeed = int(regSpeed)
 	howLong = get_time(speed, dist)
@@ -612,6 +621,7 @@ def generic_turn(direction):
 # directs command to arc turn speeds and which direction (drive direction, forward/backward)
 def turn(speed, direction, dist, drive):	
 	generic_turn(direction)
+	distance = float(dist)
 
 	if(dist==0):
 		if(drive=='forward'):
@@ -620,9 +630,9 @@ def turn(speed, direction, dist, drive):
 			return arc_turn_backward(direction, speed)
 	else:
 		if(drive=='forward'):
-			return arc_turn_forward_dist(direction, speed, dist)
+			return arc_turn_forward_dist(direction, speed, distance)
 		else:
-			return arc_turn_backward_dist(direction, speed, dist)
+			return arc_turn_backward_dist(direction, speed, distance)
 	return 0
 
 # drives rover forward for arc turns at specified speed until user tells it to stop
