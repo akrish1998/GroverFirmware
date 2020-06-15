@@ -5,19 +5,17 @@ import serial
 from roboclaw import Roboclaw
 import commands
 
-MAX_TURN = 36
+MAX_TURN = 36		# max L / R corner wheel rotation
 
 """ 'manual' for avail commands / command cookbook """
 """ 
 to add new func / command: 
-    - add its acroynm to the dictonary with it's corresponding function to the book dictionary
-        > don't include the () since that's the dereference to call the function
-    - adjust run_command and parseCommand from looper is necessary
+    - map its verbage to its corresponding function in commands.py in parseCommand
 """
 
 class COMMAND_BOOK():
 	def __init__(self):
-		self.book = {}
+		self.book = {}		# originally used to store the functions in commands.py, but not used anymore
 
 
     # dumps this info when user enters help cuz I'm dumb and can't remember every command and its field
@@ -64,7 +62,7 @@ class COMMAND_BOOK():
 		
 		
 		
-	def parseCommand(self, command):
+	def parseCommand(self, command):				# try-except commented out for debugging purposes
 		#try:
 		if(command[0] == 'calibrate' and len(command)==1):
 			return commands.calibrate_corner_encoders()

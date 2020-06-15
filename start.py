@@ -10,9 +10,8 @@ import commandBook
 """ what user sees: prompt loop where user can send commands to move rover """
 """ 
 -sit in > loop until q or Q entered
--to see command list type help, or just ask me :P 
--should handle most invalid inputs nicely, but you never know what a user can to
--you can enter commands without the speed & time and the standard values are used
+-to see command list type help
+-should handle most invalid inputs nicely, but you never know what a user can do
 -all commands are NOT case sensitive
 """
 

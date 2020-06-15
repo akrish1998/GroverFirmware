@@ -23,7 +23,7 @@ BR_ENC_MOTOR = 1
 FL_ENC_MOTOR = 1
 BL_ENC_MOTOR = 2
 
-# corner enc values from calibration
+# corner enc values for calibration
 FR_CENTER = 0
 FR_LEFT = 0
 FR_RIGHT = 0
@@ -64,8 +64,8 @@ MAX_CORNER_ENC = 1550
 INVALID_ENC = 1600
 
 # arc turn constants
-R_OUTER = 0.32				# 320 mm dist between corner wheels	
-R_HEIGHT = 0.29
+R_OUTER = 0.32		# 320 mm dist between corner wheels	
+R_HEIGHT = 0.29		# 290 mm dist between rover center and front
 MAX_TURN = 36
 
 rc = Roboclaw("/dev/ttyS0",115200)
@@ -112,7 +112,8 @@ def get_degree_by_enc(value, wheel_factor, raw_right, raw_center):
 	deg = (val - raw_center) // wheel_factor
 	return deg
 	
-	
+
+# for arc turns
 def get_inner_velo(degree, outer_speed):
 	deg = int(degree)
 	
@@ -151,32 +152,35 @@ def calibrate_FR():
 	right_most = 0
 	centered = 0
 
+	# turn to left-most position, store left-most encoder value in global var
 	rc.BackwardM1(address[RC5], CALIBRATION_SPEED)
 	time.sleep(CALIBRATION_TIME)
 	rc.BackwardM1(address[RC5], 0)
 	left_most = rc.ReadEncM2(address[RC5])[1]
 	FR_LEFT = left_most
 
+	# turn to right-most position, adding 1550 to running total if the encoder vals wrap
 	rc.ForwardM1(address[RC5], CALIBRATION_SPEED)
 	start = time.time()
 	while(time.time()-start<CALIBRATION_TIME):
-		if(rc.ReadEncM2(address[RC5])[1] >= 1500 and flag==0):		# not using 1550 cuz the enc values change fast, so giving it wide range
+		if(rc.ReadEncM2(address[RC5])[1] >= 1500 and flag==0):	# not using 1550 cuz the enc values change fast, so giving it wide range
 			centered += MAX_CORNER_ENC
 			flag = 1
 	
 	rc.ForwardM1(address[RC5], 0)
-	right_most = rc.ReadEncM2(address[RC5])[1]
+	right_most = rc.ReadEncM2(address[RC5])[1]	# store right-most encoder val, calculate center
 	FR_RIGHT = right_most
 	centered += right_most
-	FR_TOTAL = centered
+	FR_TOTAL = centered				# see Grover Motion Derivations for info on constants
 	centered = (centered+left_most)//2
 	FR_CENTER_RAW = centered
 
 	if(centered >= INVALID_ENC):
 		centered -= MAX_CORNER_ENC
 
+	# turn slower to the left so the center +/- 100 can be reached without overshooting it  
 	FR_CENTER = centered
-	rc.BackwardM1(address[RC5], SLOWER_CALIBRATION_SPEED)
+	rc.BackwardM1(address[RC5], SLOWER_CALIBRATION_SPEED)	
 	while(1):
 		if(centered-100 <= rc.ReadEncM2(address[RC5])[1] <= centered+100):	
 			break
@@ -187,7 +191,7 @@ def calibrate_FR():
 
 
 def calibrate_BR():
-	print("BR")
+	print("BR")			# same idea as the FR, but with diff constants & variables
 	global BR_CENTER
 	global BR_LEFT
 	global BR_RIGHT
@@ -235,7 +239,7 @@ def calibrate_BR():
 	
 	
 def calibrate_BL():
-	print("BL")
+	print("BL")		# same idea as the FR, but with diff constants & variables
 	global BL_CENTER
 	global BL_LEFT
 	global BL_RIGHT
@@ -283,7 +287,7 @@ def calibrate_BL():
 	
 	
 def calibrate_FL():
-	print("FL")
+	print("FL")		# same idea as the FR, but with diff constants & variables
 	global FL_CENTER
 	global FL_LEFT
 	global FL_RIGHT
@@ -433,8 +437,8 @@ def recenter_wheels_prototype():
 	return 0
 	
 
-# less reliant on first encoders read
-# turns all wheels to fully left turn position, then turns to right until centers reached
+# less reliant on encoders read
+# turns all wheels to left-most turn position, then turns to right until centers reached
 def recenter_wheels():
 	done = 0
 	fl_done = 0
@@ -597,7 +601,7 @@ def backward(speed, dist):
 #	  done by reducing wheel rotation speed
 #	(what that angle and speed is, we don't know :P)
 def generic_turn(direction):
-	if(direction == 'right'):				# right turn, left wheels outer
+	if(direction == 'right'):				# right turn, left wheels outer, right inner
 		rc.ForwardM2(address[RC4], 9)			# FL
 		rc.ForwardM1(address[RC5], CALIBRATION_SPEED)	# FR
 		rc.BackwardM1(address[RC4], 9)			# BL
